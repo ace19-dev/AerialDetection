@@ -111,3 +111,7 @@ data
 .idea
 
 trash/
+
+pretrained/
+demo/
+
