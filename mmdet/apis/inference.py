@@ -1,12 +1,16 @@
 import warnings
+import pdb
+import cv2
+import random
 
 import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
 import torch
 from mmcv.runner import load_checkpoint
+from mmcv.visualization.color import color_val
 
-from mmdet.core import get_classes
+from mmdet.core import get_classes, tensor2imgs
 from mmdet.datasets import to_tensor
 from mmdet.datasets.transforms import ImageTransform
 from mmdet.models import build_detector
@@ -142,9 +146,70 @@ def show_result(img, result, class_names, score_thr=0.3, out_file=None):
         show=out_file is None,
         out_file=out_file)
 
-def draw_poly_detections(img, detections, class_names, scale, threshold=0.2):
-    """
 
+def show_obb_result(data, result, img_norm_cfg, classes, show=False,
+                    score_thr=0.3, out_file=None):
+    """Visualize the detection results on the image.
+
+    Args:
+        img (str or np.ndarray): Image filename or loaded image.
+        result (tuple[list] or list): The detection result, can be either
+            (bbox, segm) or just bbox.
+        # class_names (list[str] or tuple[str]): A list of class names.
+        score_thr (float): The threshold to visualize the bboxes and masks.
+        out_file (str, optional): If specified, the visualization result will
+            be written to the out file instead of shown in a window.
+    """
+    if isinstance(result, tuple):
+        bbox_result, segm_result = result
+    else:
+        bbox_result, segm_result = result, None
+
+    img_tensor = data['img'][0]
+    img_metas = data['img_meta'][0].data[0]
+    imgs = tensor2imgs(img_tensor, **img_norm_cfg)
+    assert len(imgs) == len(img_metas)
+
+    # if dataset is None:
+    #     class_names = dataset.CLASSES
+    # elif isinstance(dataset, str):
+    #     class_names = get_classes(dataset)
+    # elif isinstance(dataset, (list, tuple)):
+    #     class_names = dataset
+    # else:
+    #     raise TypeError(
+    #         'dataset must be a valid dataset name or a sequence'
+    #         ' of class names, not {}'.format(type(dataset)))
+
+    for img, img_meta in zip(imgs, img_metas):
+        h, w, _ = img_meta['img_shape']
+        if out_file is not None:
+            out_file = out_file + '/OUT_' + img_meta['filename']
+        img_show = img[:h, :w, :]
+
+        bboxes = np.vstack(bbox_result)
+        # draw segmentation masks
+        if segm_result is not None:
+            segms = mmcv.concat_list(segm_result)
+            inds = np.where(bboxes[:, -1] > score_thr)[0]
+            for i in inds:
+                color_mask = np.random.randint(
+                    0, 256, (1, 3), dtype=np.uint8)
+                mask = maskUtils.decode(segms[i]).astype(np.bool)
+                img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+        # draw bounding boxes
+        labels = [
+            np.full(bbox.shape[0], i, dtype=np.int32)
+            for i, bbox in enumerate(bbox_result)
+        ]
+        labels = np.concatenate(labels)
+
+        draw_poly_detections(img_show.copy(), bboxes, labels, classes, show,
+                             out_file, score_thr=0.2)
+
+
+def draw_poly_detections(img, bboxes, labels, class_names, show, out_file, score_thr=0.2):
+    """
     :param img:
     :param detections:
     :param class_names:
@@ -153,31 +218,44 @@ def draw_poly_detections(img, detections, class_names, scale, threshold=0.2):
     :param threshold:
     :return:
     """
-    import pdb
-    import cv2
-    import random
+
     assert isinstance(class_names, (tuple, list))
+    assert bboxes.ndim == 2
+    assert labels.ndim == 1
+    assert bboxes.shape[0] == labels.shape[0]
+
     img = mmcv.imread(img)
     color_white = (255, 255, 255)
+    color_green = (0, 128, 0)
 
-    for j, name in enumerate(class_names):
-        color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
-        try:
-            dets = detections[j]
-        except:
-            pdb.set_trace()
-        for det in dets:
-            bbox = det[:8] * scale
-            score = det[-1]
-            if score < threshold:
-                continue
-            bbox = list(map(int, bbox))
+    if score_thr > 0:
+        scores = bboxes[:, -1]
+        inds = scores > score_thr
+        bboxes = bboxes[inds, :]
+        labels = labels[inds]
 
-            cv2.circle(img, (bbox[0], bbox[1]), 3, (0, 0, 255), -1)
-            for i in range(3):
-                cv2.line(img, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i+1) * 2], bbox[(i+1) * 2 + 1]), color=color, thickness=2)
-            cv2.line(img, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2)
-            cv2.putText(img, '%s %.3f' % (class_names[j], score), (bbox[0], bbox[1] + 10),
-                        color=color_white, fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5)
+    # bbox_color = 'green',
+    # text_color = 'white',
+    # bbox_color = color_val(bbox_color)
+    # # text_color = color_val(text_color)
+    for bbox, label in zip(bboxes, labels):
+        # color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
+        score = bbox[-1]
+        bbox_int = bbox.astype(np.int32)
+        # left_top = (bbox_int[0], bbox_int[1])
+        label_text = class_names[label] if class_names is not None else f'cls {label}'
+
+        cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
+        for i in range(3):
+            cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
+                     color=color_green, thickness=2)
+        cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
+        cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
+                    color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
+
+    if show:
+        mmcv.imshow(img, 'result', 0)
+    if out_file is not None:
+        mmcv.imwrite(img, out_file)
+
     return img
-

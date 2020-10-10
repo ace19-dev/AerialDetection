@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
-from mmcv.cnn.weight_init import caffe2_xavier_init
+# from mmcv.cnn.weight_init import caffe2_xavier_init
 
 from ..utils import ConvModule
 from ..registry import NECKS
@@ -69,8 +69,9 @@ class HRFPN(nn.Module):
 
     def init_weights(self):
         for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                caffe2_xavier_init(m)
+            pass
+            # if isinstance(m, nn.Conv2d):
+            #     caffe2_xavier_init(m)
 
     def forward(self, inputs):
         assert len(inputs) == self.num_ins

@@ -79,7 +79,7 @@ class RotateAugmentation(object):
                  rotate_range=(-180, 180),
                  small_filter=4):
         self.CLASSES = CLASSES
-        self.scale = scale
+        self.scale = (1-(scale-1), scale)
         self.border_value = border_value
         self.auto_bound = auto_bound
         self.rotate_range = rotate_range
@@ -89,6 +89,7 @@ class RotateAugmentation(object):
     def __call__(self, img, boxes, masks, labels, filename):
 
         angle = np.random.rand() * (self.rotate_range[1] - self.rotate_range[0]) + self.rotate_range[0]
+        # print('>>>>>>>>> angle: ', angle)
 
         discrete_range = [90, 180, -90, -180]
         for label in labels:
@@ -107,7 +108,9 @@ class RotateAugmentation(object):
         # print('len boxes: ', len(boxes))
         # print('len masks: ', len(masks))
         # print('len labels: ', len(labels))
-        matrix = cv2.getRotationMatrix2D(center, -angle, self.scale)
+        low, high = self.scale
+        _scale=np.random.uniform(low=low, high=high)
+        matrix = cv2.getRotationMatrix2D(center, -angle, _scale)
         matrix_T = copy.deepcopy(matrix[:2, :2]).T
         if self.auto_bound:
             cos = np.abs(matrix[0, 0])

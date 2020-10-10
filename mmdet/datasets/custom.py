@@ -12,6 +12,7 @@ from .extra_aug import ExtraAugmentation
 from .rotate_aug import RotateAugmentation
 from .rotate_aug import RotateTestAugmentation
 
+
 class CustomDataset(Dataset):
     """Custom dataset for detection.
 
@@ -74,8 +75,7 @@ class CustomDataset(Dataset):
                 self.proposals = [self.proposals[i] for i in valid_inds]
 
         # (long_edge, short_edge) or [(long1, short1), (long2, short2), ...]
-        self.img_scales = img_scale if isinstance(img_scale,
-                                                  list) else [img_scale]
+        self.img_scales = img_scale if isinstance(img_scale, list) else [img_scale]
         assert mmcv.is_list_of(self.img_scales, tuple)
         # normalization configs
         self.img_norm_cfg = img_norm_cfg
@@ -222,21 +222,25 @@ class CustomDataset(Dataset):
         if len(gt_bboxes) == 0:
             return None
 
-        # extra augmentation
-        if self.extra_aug is not None:
-            img, gt_bboxes, gt_labels = self.extra_aug(img, gt_bboxes,
-                                                       gt_labels)
+        # # extra augmentation
+        # if self.extra_aug is not None:
+        #     img, gt_bboxes, gt_labels = self.extra_aug(img, gt_bboxes, gt_labels)
 
         # rotate augmentation
         if self.rotate_aug is not None:
             # only support mask now, TODO: support none mask version
-            img, gt_bboxes, gt_masks, gt_labels = self.rotate_aug(img, gt_bboxes,
-                                                                      gt_masks, gt_labels, img_info['filename'])
+            img, gt_bboxes, gt_masks, gt_labels = \
+                self.rotate_aug(img, gt_bboxes, gt_masks, gt_labels, img_info['filename'])
 
             gt_bboxes = np.array(gt_bboxes).astype(np.float32)
             # skip the image if there is no valid gt bbox
             if len(gt_bboxes) == 0:
                 return None
+
+        # extra augmentation
+        if self.extra_aug is not None:
+            img, gt_bboxes, gt_labels = self.extra_aug(img, gt_bboxes, gt_labels)
+
         # apply transforms
         flip = True if np.random.rand() < self.flip_ratio else False
         # randomly sample a scale
@@ -266,8 +270,7 @@ class CustomDataset(Dataset):
         if self.with_mask:
             # gt_masks = self.mask_transform(ann['masks'], pad_shape,
             #                                scale_factor, flip)
-            gt_masks = self.mask_transform(gt_masks, pad_shape,
-                                           scale_factor, flip)
+            gt_masks = self.mask_transform(gt_masks, pad_shape, scale_factor, flip)
 
         ori_shape = (img_info['height'], img_info['width'], 3)
         img_meta = dict(
@@ -305,6 +308,7 @@ class CustomDataset(Dataset):
                     'but found {}'.format(proposal.shape))
         else:
             proposal = None
+
         # TODO: make the flip and rotate at the same time
         # TODO: when implement the img rotation, we do not consider the proposals, add it in future
         def prepare_single(img, scale, flip, proposal=None):
@@ -312,6 +316,7 @@ class CustomDataset(Dataset):
                 img, scale, flip, keep_ratio=self.resize_keep_ratio)
             _img = to_tensor(_img)
             _img_meta = dict(
+                filename=img_info['file_name'],
                 ori_shape=(img_info['height'], img_info['width'], 3),
                 img_shape=img_shape,
                 pad_shape=pad_shape,
@@ -365,7 +370,7 @@ class CustomDataset(Dataset):
                 imgs.append(_img)
                 img_metas.append(DC(_img_meta, cpu_only=True))
                 proposals.append(_proposal)
-        if self.rotate_test_aug is not None :
+        if self.rotate_test_aug is not None:
             # rotation augmentation
             # do not support proposals currently
             # img_show = img.copy()
@@ -373,7 +378,7 @@ class CustomDataset(Dataset):
             for angle in [90, 180, 270]:
 
                 for scale in self.img_scales:
-                    _img, _img_meta,  = prepare_rotation_single(
+                    _img, _img_meta, = prepare_rotation_single(
                         img, scale, False, angle)
                     imgs.append(_img)
                     img_metas.append(DC(_img_meta, cpu_only=True))
@@ -392,4 +397,5 @@ class CustomDataset(Dataset):
         data = dict(img=imgs, img_meta=img_metas)
         if self.proposals is not None:
             data['proposals'] = proposals
+
         return data
