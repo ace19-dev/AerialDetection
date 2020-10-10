@@ -74,8 +74,8 @@ train_cfg = dict(
     rpn_proposal=dict(
         nms_across_levels=False,
         nms_pre=2000,
-        nms_post=1000,
-        max_num=1000,
+        nms_post=2000,
+        max_num=2000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
@@ -104,7 +104,7 @@ test_cfg = dict(
     rcnn=dict(
         score_thr = 0.05,
         nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.5),
-        max_per_img = 100))
+        max_per_img = 1000))
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05))
 
@@ -120,8 +120,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'train_fold2/train.json',
         img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1280, 512)],
-        multiscale_mode='range',
+        img_scale=[(1280, 640)],
+        multiscale_mode='range',    # TODO: value
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -129,7 +129,7 @@ data = dict(
         with_crowd=True,
         with_label=True,
         rotate_aug=dict(
-          scale=1.5,
+          scale=1.2,
           rotate_range=(-180, 180),
         ),
         extra_aug=dict(
@@ -167,6 +167,8 @@ data = dict(
         with_mask=False,
         with_label=False,
         test_mode=True))
+# The config to build the evaluation hook,
+# refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
 evaluation = dict(interval=5, metric='bbox')
 
 # optimizer
@@ -177,6 +179,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
     warmup='linear',
+    # gamma=0.2,
     warmup_iters=1500,
     warmup_ratio=0.001,
     step=[16, 19])

@@ -10,6 +10,8 @@ model = dict(
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
         style='pytorch'),
     neck=dict(
         type='FPN',
@@ -136,7 +138,7 @@ test_cfg = dict(
         # score_thr=0.05, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img=1000)
         score_thr = 0.05,
         nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.5),
-        max_per_img = 100)
+        max_per_img = 1000)
         # score_thr = 0.001, nms = dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img = 2000)
         # score_thr = 0.001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img = 2000)
 
@@ -160,8 +162,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'train_fold2/train.json',
         img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1280, 512)],
-        multiscale_mode='range',
+        img_scale=[(1280, 640)],
+        multiscale_mode='range',    # TODO: value
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -217,8 +219,8 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
     policy='step',
-    # gamma=0.2,
     warmup='linear',
+    # gamma=0.2,
     warmup_iters=1500,
     warmup_ratio=0.001,
     step=[16, 19])    # when using 'step' policy
@@ -230,7 +232,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook')
     ])
-# yapf:enable
+
 # runtime settings
 total_epochs = 20
 dist_params = dict(backend='nccl')

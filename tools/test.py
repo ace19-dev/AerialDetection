@@ -172,7 +172,7 @@ def collect_results(result_part, size, tmp_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
                         help='test config file path')
     parser.add_argument('--checkpoint', default='../pretrained/epoch_5.pth',
                         help='checkpoint file')
