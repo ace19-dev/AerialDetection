@@ -114,3 +114,47 @@ def get_dataset(data_cfg):
     else:
         dset = dsets[0]
     return dset
+
+
+def get_test_dataset(data_cfg):
+    if data_cfg['type'] == 'RepeatDataset':
+        return RepeatDataset(
+            get_dataset(data_cfg['dataset']), data_cfg['times'])
+
+    # if isinstance(data_cfg['ann_file'], (list, tuple)):
+    #     ann_files = data_cfg['ann_file']
+    #     num_dset = len(ann_files)
+    # else:
+    #     ann_files = [data_cfg['ann_file']]
+    #     num_dset = 1
+
+    # num_dset=0
+    # if 'proposal_file' in data_cfg.keys():
+    #     if isinstance(data_cfg['proposal_file'], (list, tuple)):
+    #         proposal_files = data_cfg['proposal_file']
+    #         num_dset = len(proposal_files)
+    #     else:
+    #         proposal_files = [data_cfg['proposal_file']]
+    #         num_dset = 1
+    # else:
+    #     proposal_files = [None] * num_dset
+    # assert len(proposal_files) == num_dset
+
+    if isinstance(data_cfg['img_prefix'], (list, tuple)):
+        img_prefixes = data_cfg['img_prefix']
+    else:
+        img_prefixes = [data_cfg['img_prefix']]
+
+    dsets = []
+    for i in range(len(img_prefixes)):
+        data_info = copy.deepcopy(data_cfg)
+        # data_info['ann_file'] = ann_files[i]
+        # data_info['proposal_file'] = proposal_files[i]
+        data_info['img_prefix'] = img_prefixes[i]
+        dset = obj_from_dict(data_info, datasets)
+        dsets.append(dset)
+    if len(dsets) > 1:
+        dset = ConcatDataset(dsets)
+    else:
+        dset = dsets[0]
+    return dset

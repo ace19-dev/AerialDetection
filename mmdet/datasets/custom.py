@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 
 import mmcv
@@ -62,7 +63,11 @@ class CustomDataset(Dataset):
         self.img_prefix = img_prefix
 
         # load annotations (and proposals)
-        self.img_infos = self.load_annotations(ann_file)
+        if test_mode:
+            self.img_infos = self.load_images_info()
+        else:
+            self.img_infos = self.load_annotations(ann_file)
+
         if proposal_file is not None:
             self.proposals = self.load_proposals(proposal_file)
         else:
@@ -143,6 +148,20 @@ class CustomDataset(Dataset):
 
     def __len__(self):
         return len(self.img_infos)
+
+    def load_images_info(self):
+        images_name = os.listdir(self.img_prefix)
+        images_name.sort()
+
+        objects = []
+        for img in images_name:
+            obj = {}
+            obj['file_name'] = img
+            obj['width'] = 1024
+            obj['height'] = 1024
+            objects.append(obj)
+
+        return objects
 
     def load_annotations(self, ann_file):
         return mmcv.load(ann_file)
@@ -299,7 +318,7 @@ class CustomDataset(Dataset):
     def prepare_test_img(self, idx):
         """Prepare an image for testing (multi-scale and flipping)"""
         img_info = self.img_infos[idx]
-        img = mmcv.imread(osp.join(self.img_prefix, img_info['filename']))
+        img = mmcv.imread(osp.join(self.img_prefix, img_info['file_name']))
         if self.proposals is not None:
             proposal = self.proposals[idx][:self.num_max_proposals]
             if not (proposal.shape[1] == 4 or proposal.shape[1] == 5):

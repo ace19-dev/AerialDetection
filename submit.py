@@ -13,7 +13,7 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
 from mmdet.apis import init_dist, show_obb_result
 from mmdet.core import results2json, coco_eval, tensor2imgs
-from mmdet.datasets import build_dataloader, get_dataset
+from mmdet.datasets import build_dataloader, get_test_dataset
 from mmdet.models import build_detector
 
 img_norm_cfg = dict(
@@ -115,14 +115,13 @@ def collect_results(result_part, size, tmp_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_10.pth',
+    parser.add_argument('--checkpoint', default='pretrained/epoch_9.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
-    parser.add_argument('--out', help='output result file in pickle format')
-    # parser.add_argument('--out', default='../pretrained/outputs/out.pkl',
-    #                     help='output result file in pickle format')
+    parser.add_argument('--out', default='pretrained/outputs/out.pkl',
+                        help='output result file in pickle format')
 
     # EVAL_METRICS: Items to be evaluated on the results. Allowed values depend on the dataset,
     # e.g., proposal_fast, proposal, bbox, segm are available for COCO,
@@ -175,7 +174,8 @@ def main():
 
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
-    dataset = get_dataset(cfg.data.test)
+    # dataset = get_dataset(cfg.data.test)
+    dataset = get_test_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,
         imgs_per_gpu=1,
@@ -200,7 +200,6 @@ def main():
         model = MMDistributedDataParallel(model.cuda())
         outputs = multi_gpu_test(model, data_loader, args.tmp_dir)
 
-    # TODO: 나중에 적용.
     rank, _ = get_dist_info()
     if args.out and rank == 0:
         print('\nwriting results to {}'.format(args.out))

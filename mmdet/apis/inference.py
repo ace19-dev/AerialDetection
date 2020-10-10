@@ -204,11 +204,17 @@ def show_obb_result(data, result, img_norm_cfg, classes, show=False,
         ]
         labels = np.concatenate(labels)
 
-        draw_poly_detections(img_show.copy(), bboxes, labels, classes, show,
-                             out_file, score_thr=0.2)
+        # set score threshold
+        if score_thr > 0:
+            scores = bboxes[:, -1]
+            inds = scores > score_thr
+            bboxes = bboxes[inds, :]
+            labels = labels[inds]
+
+        draw_poly_detections(img_show.copy(), bboxes, labels, classes, show, out_file)
 
 
-def draw_poly_detections(img, bboxes, labels, class_names, show, out_file, score_thr=0.2):
+def draw_poly_detections(img, bboxes, labels, class_names, show, out_file):
     """
     :param img:
     :param detections:
@@ -228,11 +234,11 @@ def draw_poly_detections(img, bboxes, labels, class_names, show, out_file, score
     color_white = (255, 255, 255)
     color_green = (0, 128, 0)
 
-    if score_thr > 0:
-        scores = bboxes[:, -1]
-        inds = scores > score_thr
-        bboxes = bboxes[inds, :]
-        labels = labels[inds]
+    # if score_thr > 0:
+    #     scores = bboxes[:, -1]
+    #     inds = scores > score_thr
+    #     bboxes = bboxes[inds, :]
+    #     labels = labels[inds]
 
     # bbox_color = 'green',
     # text_color = 'white',
