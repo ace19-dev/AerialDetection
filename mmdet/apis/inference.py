@@ -251,7 +251,7 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
         cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
         for i in range(3):
             cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
-                     color=color_green, thickness=2)
+                     color=color_green, thickness=1)
         cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
         cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
                     color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)

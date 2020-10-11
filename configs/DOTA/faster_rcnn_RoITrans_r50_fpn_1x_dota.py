@@ -135,11 +135,9 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        # score_thr=0.05, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img=1000)
         score_thr=0.05,
-        nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.5),
-        max_per_img=1000)
-    # score_thr = 0.001, nms = dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img = 2000)
+        nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1),
+        max_per_img=2000)
     # score_thr = 0.001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img = 2000)
 
     # soft-nms is also supported for rcnn testing
@@ -160,9 +158,9 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_fold2/train.json',
-        img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1280, 768)],
+        ann_file=data_root + 'ori_train/train.json',
+        img_prefix=data_root + 'ori_train/images',
+        img_scale=[(1536, 768)],
         multiscale_mode='range',
         # img_scale=[(1024, 1024), (768, 768), (512, 512),
         #            (1024, 768), (768, 1024), (768, 512),
@@ -179,9 +177,11 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
+            # # TODO: bugfix
             # random_crop=dict(
             #     min_ious=(0.5, 0.7, 0.9),
             #     min_crop_size=0.5
+            # crop_size=(512, 512)
             # ),
             photo_metric_distortion=dict(
                 brightness_delta=32,
@@ -215,30 +215,29 @@ data = dict(
 )
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=2, metric='bbox')
+evaluation = dict(interval=3, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.006, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
-# lr_config = dict(
-#     policy='step',
-#     warmup='linear',
-#     # gamma=0.2,
-#     warmup_iters=1500,
-#     warmup_ratio=0.01,
-#     step=[14, 19])  # when using 'step' policy
 lr_config = dict(
-    policy='CosineAnnealing',
+    policy='step',
     warmup='linear',
+    # gamma=0.2,
     warmup_iters=1500,
-    warmup_ratio=1.0 / 10,
-    min_lr_ratio=1e-5)
+    warmup_ratio=0.01,
+    step=[16, 22])  # when using 'step' policy
+# lr_config = dict(
+#     policy='CosineAnnealing',
+#     warmup='linear',
+#     warmup_iters=1500,
+#     warmup_ratio=1.0 / 10,
+#     min_lr_ratio=1e-5)
 
-checkpoint_config = dict(interval=2)
-
+checkpoint_config = dict(interval=3)
 log_config = dict(
     interval=50,
     hooks=[
@@ -247,12 +246,12 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 20
+total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
-load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
-# load_from = None
+# load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
 # workflow = [('train', 5), ('val', 1)]

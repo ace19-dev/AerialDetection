@@ -1,6 +1,9 @@
 import os
 import os.path as osp
 
+# import matplotlib
+# matplotlib.use('Agg')
+
 import mmcv
 import numpy as np
 from mmcv.parallel import DataContainer as DC
@@ -258,6 +261,10 @@ class CustomDataset(Dataset):
 
         # extra augmentation
         if self.extra_aug is not None:
+            # print('##################')
+            # print(img)
+            # print(gt_bboxes)
+            # print(gt_labels)
             img, gt_bboxes, gt_labels = self.extra_aug(img, gt_bboxes, gt_labels)
 
         # apply transforms
