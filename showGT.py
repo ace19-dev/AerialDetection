@@ -2,12 +2,9 @@
 https://dacon.io/competitions/official/235644/codeshre/1698?page=1&dtype=recent&ptype=pub
 '''
 
-import os
 # from DOTA_devkit.DOTA import DOTA
-import DOTA_devkit.dota_utils as util
 import pylab
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 from arirang import Arirang

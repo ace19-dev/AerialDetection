@@ -91,18 +91,18 @@ class RotateAugmentation(object):
         angle = np.random.rand() * (self.rotate_range[1] - self.rotate_range[0]) + self.rotate_range[0]
         # print('>>>>>>>>> angle: ', angle)
 
+        # TODO: test filter
         discrete_range = [90, 180, -90, -180]
-        for label in labels:
-            # print('label: ', label)
-            cls = self.CLASSES[label-1]
-            # print('cls: ', cls)
-            if (cls == 'storage-tank') or (cls == 'roundabout') or (cls == 'airport'):
-                random.shuffle(discrete_range)
-                angle = discrete_range[0]
-                break
+        # for label in labels:
+        #     # print('label: ', label)
+        #     cls = self.CLASSES[label-1]
+        #     # print('cls: ', cls)
+        #     if (cls == 'storage-tank') or (cls == 'roundabout') or (cls == 'airport'):
+        #         random.shuffle(discrete_range)
+        #         angle = discrete_range[0]
+        #         break
 
         # rotate image, copy from mmcv.imrotate
-
         h, w = img.shape[:2]
         center = ((w - 1) * 0.5, (h - 1) * 0.5)
         # print('len boxes: ', len(boxes))

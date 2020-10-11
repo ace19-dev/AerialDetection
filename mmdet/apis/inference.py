@@ -211,17 +211,18 @@ def show_obb_result(data, result, img_norm_cfg, classes, show=False,
             bboxes = bboxes[inds, :]
             labels = labels[inds]
 
-        draw_poly_detections(img_show.copy(), bboxes, labels, classes, show, out_file)
+        draw_poly_detections(img_meta['filename'], img_show.copy(), bboxes, labels, classes, show, out_file)
 
 
-def draw_poly_detections(img, bboxes, labels, class_names, show, out_file):
+def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_file):
     """
+    :param img_name:
     :param img:
-    :param detections:
+    :param bboxes:
+    :param labels:
     :param class_names:
-    :param scale:
-    :param cfg:
-    :param threshold:
+    :param show:
+    :param out_file:
     :return:
     """
 
@@ -240,10 +241,6 @@ def draw_poly_detections(img, bboxes, labels, class_names, show, out_file):
     #     bboxes = bboxes[inds, :]
     #     labels = labels[inds]
 
-    # bbox_color = 'green',
-    # text_color = 'white',
-    # bbox_color = color_val(bbox_color)
-    # # text_color = color_val(text_color)
     for bbox, label in zip(bboxes, labels):
         # color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
         score = bbox[-1]
@@ -260,7 +257,7 @@ def draw_poly_detections(img, bboxes, labels, class_names, show, out_file):
                     color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
 
     if show:
-        mmcv.imshow(img, 'result', 0)
+        mmcv.imshow(img, img_name, 0)
     if out_file is not None:
         mmcv.imwrite(img, out_file)
 

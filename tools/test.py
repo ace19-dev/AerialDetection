@@ -115,9 +115,9 @@ def collect_results(result_part, size, tmp_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_10.pth',
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_20.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')
@@ -138,10 +138,10 @@ def parse_args():
     # It is only applicable to single GPU testing and used for debugging and visualization.
     parser.add_argument('--show', default=True, help='show results')
     # set show dir
-    # parser.add_argument('--show-dir', default='../pretrained/results',
-    #                     help='directory where painted images will be saved')
-    parser.add_argument('--show-dir',
+    parser.add_argument('--show-dir', default='../pretrained/results',
                         help='directory where painted images will be saved')
+    # parser.add_argument('--show-dir',
+    #                     help='directory where painted images will be saved')
     parser.add_argument('--tmp_dir', help='tmp dir for writing some results')
     parser.add_argument('--log_dir', help='log the inference speed')
     parser.add_argument('--launcher',

@@ -164,7 +164,7 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'train_fold2/train.json',
         img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1280, 768)],
+        img_scale=[(1536, 512)],
         multiscale_mode='range',
         # img_scale=[(1024, 1024), (768, 768), (512, 512),
         #            (1024, 768), (768, 1024), (768, 512),
@@ -177,10 +177,11 @@ data = dict(
         with_crowd=True,
         with_label=True,
         rotate_aug=dict(
-            scale=1.0,
+            scale=1.2,
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
+            # TODO: bugfix
             # random_crop=dict(
             #     min_ious=(0.5, 0.7, 0.9),
             #     min_crop_size=0.5
@@ -217,30 +218,29 @@ data = dict(
 )
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=2, metric='bbox')
+evaluation = dict(interval=5, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
-# lr_config = dict(
-#     policy='step',
-#     warmup='linear',
-#     # gamma=0.2,
-#     warmup_iters=1500,
-#     warmup_ratio=0.01,
-#     step=[14, 19])  # when using 'step' policy
 lr_config = dict(
-    policy='CosineAnnealing',
+    policy='step',
     warmup='linear',
-    warmup_iters=1500,
-    warmup_ratio=1.0 / 10,
-    min_lr_ratio=1e-5)
+    # gamma=0.2,
+    warmup_iters=2500,
+    warmup_ratio=0.001,
+    step=[21, 29])  # when using 'step' policy
+# lr_config = dict(
+#     policy='CosineAnnealing',
+#     warmup='linear',
+#     warmup_iters=1500,
+#     warmup_ratio=1.0 / 10,
+#     min_lr_ratio=1e-5)
 
-checkpoint_config = dict(interval=2)
-
+checkpoint_config = dict(interval=5)
 log_config = dict(
     interval=50,
     hooks=[
@@ -249,7 +249,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 20
+total_epochs = 30
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py'
