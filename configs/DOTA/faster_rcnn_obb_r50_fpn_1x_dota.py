@@ -103,8 +103,8 @@ test_cfg = dict(
         min_bbox_size=0),
     rcnn=dict(
         score_thr = 0.05,
-        nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.5),
-        max_per_img = 1000))
+        nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.1),
+        max_per_img = 2000))
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05))
 
@@ -118,10 +118,12 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_fold2/train.json',
-        img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1280, 640)],
-        multiscale_mode='range',    # TODO: value
+        ann_file=data_root + 'train/train.json',
+        img_prefix=data_root + 'train/images',
+        # img_scale=[(1280, 640)],
+        # multiscale_mode='range',    # TODO: value
+        img_scale=[(1024, 1024)],
+        multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -129,19 +131,19 @@ data = dict(
         with_crowd=True,
         with_label=True,
         rotate_aug=dict(
-          scale=1.2,
+          scale=1.0,
           rotate_range=(-180, 180),
         ),
-        extra_aug=dict(
-            # random_crop=dict(
-            #
-            # ),
-            photo_metric_distortion=dict(
-                brightness_delta=32,
-                contrast_range=(0.2, 1.2),
-                saturation_range=(0.2, 1.2),
-                hue_delta=18),
-            ),
+        # extra_aug=dict(
+        #     # random_crop=dict(
+        #     #
+        #     # ),
+        #     photo_metric_distortion=dict(
+        #         brightness_delta=32,
+        #         contrast_range=(0.2, 1.2),
+        #         saturation_range=(0.2, 1.2),
+        #         hue_delta=18),
+        #     ),
         ),
     val=dict(
         type=dataset_type,
@@ -157,7 +159,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'baseline_test/images',
+        img_prefix=data_root + 'test/images',
         # ann_file=data_root + 'test1024_ms/DOTA_test1024_ms.json',
         # img_prefix=data_root + 'test1024_ms/images',
         img_scale=(1024, 1024),
@@ -169,10 +171,10 @@ data = dict(
         test_mode=True))
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=5, metric='bbox')
+evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
@@ -180,10 +182,10 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1500,
-    warmup_ratio=0.001,
-    step=[16, 19])
-checkpoint_config = dict(interval=5)
+    warmup_iters=500,
+    warmup_ratio=1.0 / 3,
+    step=[56, 70])
+checkpoint_config = dict(interval=2)
 
 log_config = dict(
     interval=50,
@@ -193,7 +195,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 20
+total_epochs = 72
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_dota'
