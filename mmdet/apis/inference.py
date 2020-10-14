@@ -211,7 +211,10 @@ def show_obb_result(data, result, img_norm_cfg, classes, show=False,
             bboxes = bboxes[inds, :]
             labels = labels[inds]
 
-        draw_poly_detections(img_meta['filename'], img_show.copy(), bboxes, labels, classes, show, out_file)
+        results = draw_poly_detections(img_meta['filename'], img_show.copy(),
+                                       bboxes, labels, classes, show, out_file)
+
+    return results
 
 
 def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_file):
@@ -241,24 +244,36 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
     #     bboxes = bboxes[inds, :]
     #     labels = labels[inds]
 
+    results = []
     for bbox, label in zip(bboxes, labels):
+        object = {}
         # color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
         score = bbox[-1]
         bbox_int = bbox.astype(np.int32)
         # left_top = (bbox_int[0], bbox_int[1])
         label_text = class_names[label] if class_names is not None else f'cls {label}'
 
-        cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
-        for i in range(3):
-            cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
-                     color=color_green, thickness=1)
-        cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
-        cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
-                    color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
+        # cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
+        # for i in range(3):
+        #     cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
+        #              color=color_green, thickness=1)
+        # cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
+        # cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
+        #             color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
 
-    if show:
-        mmcv.imshow(img, img_name, 0)
-    if out_file is not None:
-        mmcv.imwrite(img, out_file)
+        # submit object
+        object['file_name'] = img_name
+        object['class_id'] = label
+        object['confidence'] = score
+        object['point1_x'], object['point1_y'] = bbox_int[0], bbox_int[1]
+        object['point2_x'], object['point2_y'] = bbox_int[2], bbox_int[3]
+        object['point3_x'], object['point3_y'] = bbox_int[4], bbox_int[5]
+        object['point4_x'], object['point4_y'] = bbox_int[6], bbox_int[7]
+        results.append(object)
 
-    return img
+    # if show:
+    #     mmcv.imshow(img, img_name, 0)
+    # if out_file is not None:
+    #     mmcv.imwrite(img, out_file)
+
+    return results

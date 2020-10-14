@@ -160,11 +160,10 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'train_fold2/train.json',
         img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1536, 768)],
+        img_scale=[(1024, 512)],
         multiscale_mode='range',
         # img_scale=[(1024, 1024), (768, 768), (512, 512),
-        #            (1024, 768), (768, 1024), (768, 512),
-        #            (512, 768)],
+        #            (1280, 1280),],
         # multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -204,7 +203,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'baseline_test/images',
+        img_prefix=data_root + 'test/images',
         img_scale=(1024, 1024),
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -227,7 +226,7 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1500,
+    warmup_iters=500,
     warmup_ratio=0.01,
     step=[16, 22])  # when using 'step' policy
 # lr_config = dict(
@@ -250,8 +249,8 @@ total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
-# load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
-load_from = None
+load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+# load_from = None
 resume_from = None
 workflow = [('train', 1)]
 # workflow = [('train', 5), ('val', 1)]

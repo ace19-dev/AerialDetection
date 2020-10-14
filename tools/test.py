@@ -1,3 +1,5 @@
+import os
+import csv
 import argparse
 import os.path as osp
 import shutil
@@ -27,6 +29,7 @@ def get_time_str():
 def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.3):
     model.eval()
     results = []
+    submit_results = []
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
@@ -38,12 +41,30 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr
             # model.module.show_result(data, result, dataset.img_norm_cfg)
 
             # show DOTA coordinate
-            show_obb_result(data, result, dataset.img_norm_cfg, dataset.CLASSES,
-                            show=show, score_thr=show_score_thr, out_file=out_dir)
+            result = show_obb_result(data, result, dataset.img_norm_cfg, dataset.CLASSES,
+                                     show=show, score_thr=show_score_thr, out_file=out_dir)
+            submit_results.extend(result)
 
         batch_size = data['img'][0].size(0)
         for _ in range(batch_size):
             prog_bar.update()
+
+    # TODO: submit
+    if not os.path.exists('../submit'):
+        os.makedirs('../submit')
+
+    fout = open('../submit/%s_submission.csv' % '2th',
+                'w', encoding='UTF-8', newline='')
+    writer = csv.writer(fout)
+    writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',
+                     'point2_x', 'point2_y', 'point3_x', 'point3_y', 'point4_x', 'point4_y', ])
+    for r in submit_results:
+        writer.writerow([r['file_name'], r['class_id'], r['confidence'],
+                         r['point1_x'], r['point1_y'],
+                         r['point2_x'], r['point2_y'],
+                         r['point3_x'], r['point3_y'],
+                         r['point4_x'], r['point4_y']])
+    fout.close()
 
     return results
 
@@ -117,7 +138,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
     parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/dota_epoch_12.pth',
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_24.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')
