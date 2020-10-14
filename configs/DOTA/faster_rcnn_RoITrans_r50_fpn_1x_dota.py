@@ -158,13 +158,12 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_fold2/train.json',
-        img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1024, 512)],
-        multiscale_mode='range',
-        # img_scale=[(1024, 1024), (768, 768), (512, 512),
-        #            (1280, 1280),],
-        # multiscale_mode='value',
+        ann_file=data_root + 'train/train.json',
+        img_prefix=data_root + 'train/images',
+        # img_scale=[(1024, 512)],
+        # multiscale_mode='range',
+        img_scale=[(512, 512)],
+        multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -183,10 +182,10 @@ data = dict(
             # crop_size=(512, 512)
             # ),
             photo_metric_distortion=dict(
-                brightness_delta=32,
+                brightness_delta=16,
                 contrast_range=(0.1, 1.1),
                 saturation_range=(0.1, 1.1),
-                hue_delta=18),
+                hue_delta=9),
         ),
     ),
     val=dict(
@@ -214,7 +213,7 @@ data = dict(
 )
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=3, metric='bbox')
+evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
 optimizer = dict(type='SGD', lr=0.006, momentum=0.9, weight_decay=0.0001)
@@ -228,7 +227,7 @@ lr_config = dict(
     # gamma=0.2,
     warmup_iters=500,
     warmup_ratio=0.01,
-    step=[16, 22])  # when using 'step' policy
+    step=[56, 70])  # when using 'step' policy
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -236,7 +235,7 @@ lr_config = dict(
 #     warmup_ratio=1.0 / 10,
 #     min_lr_ratio=1e-5)
 
-checkpoint_config = dict(interval=3)
+checkpoint_config = dict(interval=2)
 log_config = dict(
     interval=50,
     hooks=[
@@ -245,7 +244,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 24
+total_epochs = 72
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
