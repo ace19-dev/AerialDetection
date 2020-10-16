@@ -96,8 +96,10 @@ def load_geojsons(filepath):
     class_indices = list()
     class_names = list()
 
+    num = 0
     for feature in tqdm(features, desc='extracting features'):
         properties = feature['properties']
+        # print('############  ', properties)
         image_ids.append(properties['image_id'].replace('PS4', 'PS3')[:-4]+'.png')
         obj_coords.append([float(num) for num in properties['object_imcoords'].split(",")])
         class_indices.append(properties['type_id'])
@@ -146,9 +148,9 @@ if __name__ == '__main__':
 
     rootfolder = '/home/ace19/dl_data/Arirang_Dataset'
 
-    geojson2coco(imageroot=os.path.join(rootfolder, 'train/images'),
-                 geojsonpath=os.path.join(rootfolder, 'train/json'),
-                 destfile=os.path.join(rootfolder, 'train/train.json'))
+    geojson2coco(imageroot=os.path.join(rootfolder, 'patch/images'),
+                 geojsonpath=os.path.join(rootfolder, 'patch/json'),
+                 destfile=os.path.join(rootfolder, 'patch/train.json'))
     
     # geojson2coco(imageroot=os.path.join(rootfolder, 'test/images'),
     #              destfile=os.path.join(rootfolder, 'test/testcoco.json'))

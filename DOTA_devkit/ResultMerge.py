@@ -16,15 +16,16 @@ import pdb
 ## the thresh for nms when merge image
 nms_thresh = 0.1
 
+
 def py_cpu_nms_poly(dets, thresh):
     scores = dets[:, 8]
     polys = []
     areas = []
     for i in range(len(dets)):
         tm_polygon = polyiou.VectorDouble([dets[i][0], dets[i][1],
-                                            dets[i][2], dets[i][3],
-                                            dets[i][4], dets[i][5],
-                                            dets[i][6], dets[i][7]])
+                                           dets[i][2], dets[i][3],
+                                           dets[i][4], dets[i][5],
+                                           dets[i][6], dets[i][7]])
         polys.append(tm_polygon)
     order = scores.argsort()[::-1]
 
@@ -51,18 +52,22 @@ def py_cpu_nms_poly(dets, thresh):
         inds = np.where(ovr2 <= thresh)[0]
         order = order[inds + 1]
     return keep
+
+
 def test_nms():
-    dets = [ [  6.86000000e+02,   2.97600000e+03,   7.09000000e+02,   2.97600000e+03,
-              7.24000000e+02,   2.97600000e+03,   7.01000000e+02,   2.97600000e+03,
-   2.71368679e-03], [  6.86000000e+02,   2.97600000e+03,   7.09000000e+02,   2.97600000e+03,
-   7.24000000e+02,   2.97600000e+03,   7.01000000e+02,   2.97600000e+03,
-   2.70966860e-03] ]
+    dets = [[6.86000000e+02, 2.97600000e+03, 7.09000000e+02, 2.97600000e+03,
+             7.24000000e+02, 2.97600000e+03, 7.01000000e+02, 2.97600000e+03,
+             2.71368679e-03], [6.86000000e+02, 2.97600000e+03, 7.09000000e+02, 2.97600000e+03,
+                               7.24000000e+02, 2.97600000e+03, 7.01000000e+02, 2.97600000e+03,
+                               2.70966860e-03]]
     dets = np.array(dets)
     keep = py_cpu_nms_poly(dets, nms_thresh)
     print(keep)
+
+
 def py_cpu_nms(dets, thresh):
     """Pure Python NMS baseline."""
-    #print('dets:', dets)
+    # print('dets:', dets)
     x1 = dets[:, 0]
     y1 = dets[:, 1]
     x2 = dets[:, 2]
@@ -92,34 +97,38 @@ def py_cpu_nms(dets, thresh):
 
     return keep
 
+
 def nmsbynamedict(nameboxdict, nms, thresh):
     nameboxnmsdict = {x: [] for x in nameboxdict}
     for imgname in nameboxdict:
-        #print('imgname:', imgname)
-        #keep = py_cpu_nms(np.array(nameboxdict[imgname]), thresh)
-        #print('type nameboxdict:', type(nameboxnmsdict))
-        #print('type imgname:', type(imgname))
-        #print('type nms:', type(nms))
+        # print('imgname:', imgname)
+        # keep = py_cpu_nms(np.array(nameboxdict[imgname]), thresh)
+        # print('type nameboxdict:', type(nameboxnmsdict))
+        # print('type imgname:', type(imgname))
+        # print('type nms:', type(nms))
         try:
             keep = nms(np.array(nameboxdict[imgname], dtype=np.float32), thresh)  ## for gpu
         except:
-            keep = nms(np.array(nameboxdict[imgname]), thresh) ## for cpu
-        #print('keep:', keep)
+            keep = nms(np.array(nameboxdict[imgname]), thresh)  ## for cpu
+        # print('keep:', keep)
         outdets = []
-        #print('nameboxdict[imgname]: ', nameboxnmsdict[imgname])
+        # print('nameboxdict[imgname]: ', nameboxnmsdict[imgname])
         for index in keep:
             # print('index:', index)
             outdets.append(nameboxdict[imgname][index])
         nameboxnmsdict[imgname] = outdets
     return nameboxnmsdict
+
+
 def poly2origpoly(poly, x, y, rate):
     origpoly = []
-    for i in range(int(len(poly)/2)):
+    for i in range(int(len(poly) / 2)):
         tmp_x = float(poly[i * 2] + x) / float(rate)
         tmp_y = float(poly[i * 2 + 1] + y) / float(rate)
         origpoly.append(tmp_x)
         origpoly.append(tmp_y)
     return origpoly
+
 
 def mergebase(srcpath, dstpath, nms):
     assert os.path.exists(srcpath), "The srcpath is not exists!"
@@ -127,7 +136,7 @@ def mergebase(srcpath, dstpath, nms):
     assert os.path.exists(dstpath), "The dstpath is not exists!"
     for fullname in filelist:
         name = util.custombasename(fullname)
-        #print('name:', name)
+        # print('name:', name)
         dstname = os.path.join(dstpath, name + '.txt')
         with open(fullname, 'r') as f_in:
             nameboxdict = {}
@@ -138,7 +147,7 @@ def mergebase(srcpath, dstpath, nms):
                 splitname = subname.split('__')
                 oriname = splitname[0]
                 pattern1 = re.compile(r'__\d+___\d+')
-                #print('subname:', subname)
+                # print('subname:', subname)
                 x_y = re.findall(pattern1, subname)
                 x_y_2 = re.findall(r'\d+', x_y[0])
                 x, y = int(x_y_2[0]), int(x_y_2[1])
@@ -160,12 +169,14 @@ def mergebase(srcpath, dstpath, nms):
             with open(dstname, 'w') as f_out:
                 for imgname in nameboxnmsdict:
                     for det in nameboxnmsdict[imgname]:
-                        #print('det:', det)
+                        # print('det:', det)
                         confidence = det[-1]
                         bbox = det[0:-1]
                         outline = imgname + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
-                        #print('outline:', outline)
+                        # print('outline:', outline)
                         f_out.write(outline + '\n')
+
+
 def mergebyrec(srcpath, dstpath):
     """
     srcpath: result files before merge and nms
@@ -177,6 +188,8 @@ def mergebyrec(srcpath, dstpath):
     mergebase(srcpath,
               dstpath,
               py_cpu_nms)
+
+
 def mergebypoly(srcpath, dstpath):
     """
     srcpath: result files before merge and nms
@@ -190,8 +203,9 @@ def mergebypoly(srcpath, dstpath):
     # mergebase(srcpath,
     #           dstpath,
     #           poly_nms_gpu)
-if __name__ == '__main__':
 
+
+if __name__ == '__main__':
     start = time.clock()
     # mergebypoly(r'/home/dingjian/data/ODAI/ODAI_submmit/baseline/task1_results',
     #             r'/home/dingjian/data/ODAI/ODAI_submmit/baseline/task1_merge2')

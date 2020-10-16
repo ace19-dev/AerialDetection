@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon, Circle
 import numpy as np
-import dota_utils as util
+import DOTA_devkit.dota_utils as util
 from collections import defaultdict
 import cv2
 
@@ -15,10 +15,11 @@ def _isArrayLike(obj):
         return False
     return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
 
+
 class DOTA:
     def __init__(self, basepath):
         self.basepath = basepath
-        self.labelpath = os.path.join(basepath, 'labelTxt')
+        self.labelpath = os.path.join(basepath, 'json')
         self.imagepath = os.path.join(basepath, 'images')
         self.imgpaths = util.GetFileFromThisRootDir(self.labelpath)
         self.imglist = [util.custombasename(x) for x in self.imgpaths]
@@ -62,7 +63,7 @@ class DOTA:
         objects = self.ImgToAnns[imgId]
         if len(catNms) == 0:
             return objects
-        outobjects = [obj for obj in objects if (obj['name'] in catNms)]
+        outobjects = [obj for obj in objects if (obj['type_name'] in catNms)]
         return outobjects
     def showAnns(self, objects, imgId, range):
         """

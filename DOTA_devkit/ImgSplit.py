@@ -1,12 +1,15 @@
 import os
+import sys
+import json
 import codecs
 import numpy as np
 import math
-from dota_utils import GetFileFromThisRootDir
+from DOTA_devkit.dota_utils import GetFileFromThisRootDir, TuplePoly2Poly
 import cv2
 import shapely.geometry as shgeo
-import dota_utils as util
+import DOTA_devkit.dota_utils as util
 import copy
+
 
 def choose_best_pointorder_fit_another(poly1, poly2):
     """
@@ -23,25 +26,25 @@ def choose_best_pointorder_fit_another(poly1, poly2):
     combinate = [np.array([x1, y1, x2, y2, x3, y3, x4, y4]), np.array([x2, y2, x3, y3, x4, y4, x1, y1]),
                  np.array([x3, y3, x4, y4, x1, y1, x2, y2]), np.array([x4, y4, x1, y1, x2, y2, x3, y3])]
     dst_coordinate = np.array(poly2)
-    distances = np.array([np.sum((coord - dst_coordinate)**2) for coord in combinate])
+    distances = np.array([np.sum((coord - dst_coordinate) ** 2) for coord in combinate])
     sorted = distances.argsort()
     return combinate[sorted[0]]
 
-def cal_line_length(point1, point2):
-    return math.sqrt( math.pow(point1[0] - point2[0], 2) + math.pow(point1[1] - point2[1], 2))
 
+def cal_line_length(point1, point2):
+    return math.sqrt(math.pow(point1[0] - point2[0], 2) + math.pow(point1[1] - point2[1], 2))
 
 
 class splitbase():
     def __init__(self,
                  basepath,
                  outpath,
-                 code = 'utf-8',
+                 code='utf-8',
                  gap=512,
                  subsize=1024,
                  thresh=0.7,
                  choosebestpoint=True,
-                 ext = '.png',
+                 ext='.png',
                  padding=True
                  ):
         """
@@ -64,9 +67,9 @@ class splitbase():
         self.slide = self.subsize - self.gap
         self.thresh = thresh
         self.imagepath = os.path.join(self.basepath, 'images')
-        self.labelpath = os.path.join(self.basepath, 'labelTxt')
+        self.labelpath = os.path.join(self.basepath, 'json')
         self.outimagepath = os.path.join(self.outpath, 'images')
-        self.outlabelpath = os.path.join(self.outpath, 'labelTxt')
+        self.outlabelpath = os.path.join(self.outpath, 'json')
         self.choosebestpoint = choosebestpoint
         self.ext = ext
         self.padding = padding
@@ -81,13 +84,14 @@ class splitbase():
         if not os.path.isdir(self.outlabelpath):
             os.mkdir(self.outlabelpath)
         # pdb.set_trace()
+
     ## point: (x, y), rec: (xmin, ymin, xmax, ymax)
     # def __del__(self):
     #     self.f_sub.close()
     ## grid --> (x, y) position of grids
     def polyorig2sub(self, left, up, poly):
         polyInsub = np.zeros(len(poly))
-        for i in range(int(len(poly)/2)):
+        for i in range(int(len(poly) / 2)):
             polyInsub[i * 2] = int(poly[i * 2] - left)
             polyInsub[i * 2 + 1] = int(poly[i * 2 + 1] - up)
         return polyInsub
@@ -102,7 +106,7 @@ class splitbase():
         half_iou = inter_area / poly1_area
         return inter_poly, half_iou
 
-    def saveimagepatches(self, img, subimgname, left, up):
+    def save_image_patches(self, img, subimgname, left, up):
         subimg = copy.deepcopy(img[up: (up + self.subsize), left: (left + self.subsize)])
         outdir = os.path.join(self.outimagepath, subimgname + self.ext)
         h, w, c = np.shape(subimg)
@@ -114,18 +118,19 @@ class splitbase():
             cv2.imwrite(outdir, subimg)
 
     def GetPoly4FromPoly5(self, poly):
-        distances = [cal_line_length((poly[i * 2], poly[i * 2 + 1] ), (poly[(i + 1) * 2], poly[(i + 1) * 2 + 1])) for i in range(int(len(poly)/2 - 1))]
+        distances = [cal_line_length((poly[i * 2], poly[i * 2 + 1]), (poly[(i + 1) * 2], poly[(i + 1) * 2 + 1])) for i
+                     in range(int(len(poly) / 2 - 1))]
         distances.append(cal_line_length((poly[0], poly[1]), (poly[8], poly[9])))
         pos = np.array(distances).argsort()[0]
         count = 0
         outpoly = []
         while count < 5:
-            #print('count:', count)
+            # print('count:', count)
             if (count == pos):
-                outpoly.append((poly[count * 2] + poly[(count * 2 + 2)%10])/2)
-                outpoly.append((poly[(count * 2 + 1)%10] + poly[(count * 2 + 3)%10])/2)
+                outpoly.append((poly[count * 2] + poly[(count * 2 + 2) % 10]) / 2)
+                outpoly.append((poly[(count * 2 + 1) % 10] + poly[(count * 2 + 3) % 10]) / 2)
                 count = count + 1
-            elif (count == (pos + 1)%5):
+            elif (count == (pos + 1) % 5):
                 count = count + 1
                 continue
 
@@ -136,67 +141,107 @@ class splitbase():
         return outpoly
 
     def savepatches(self, resizeimg, objects, subimgname, left, up, right, down):
-        outdir = os.path.join(self.outlabelpath, subimgname + '.txt')
+        outdir = os.path.join(self.outlabelpath, subimgname + '.json')
         mask_poly = []
         imgpoly = shgeo.Polygon([(left, up), (right, up), (right, down),
                                  (left, down)])
-        with codecs.open(outdir, 'w', self.code) as f_out:
-            for obj in objects:
-                gtpoly = shgeo.Polygon([(obj['poly'][0], obj['poly'][1]),
-                                         (obj['poly'][2], obj['poly'][3]),
-                                         (obj['poly'][4], obj['poly'][5]),
-                                         (obj['poly'][6], obj['poly'][7])])
-                if (gtpoly.area <= 0):
+
+        anno = {}
+        features = []
+        anno['type'] = 'FeatureCollection'
+        anno['features'] = features
+        geometry = {'coordinates': [[[1, 1, 0.0], [1, 1, 0.0], [1, 1, 0.0], [1, 1, 0.0]]],
+                    'type': 'Polygon'}
+
+        for obj in objects:
+            gtpoly = shgeo.Polygon([(obj['poly'][0], obj['poly'][1]),
+                                    (obj['poly'][2], obj['poly'][3]),
+                                    (obj['poly'][4], obj['poly'][5]),
+                                    (obj['poly'][6], obj['poly'][7])])
+
+            if gtpoly.area <= 0:
+                continue
+
+            inter_poly, half_iou = self.calchalf_iou(gtpoly, imgpoly)
+            # print('writing...')
+            if half_iou == 1:
+                polyInsub = self.polyorig2sub(left, up, obj['poly'])
+                imcoords = ','.join(list(map(str, polyInsub)))
+                # outline = imcoords + ' ' + obj['type_name'] + ' ' + str(obj['difficult'])
+                # print(outline)
+                # f_out.write(outline + '\n')
+
+                properties = {'object_imcoords': imcoords, 'object_angle': obj['angle'], 'building_imcoords': 'EMPTY',
+                              'road_imcoords': 'EMPTY', 'image_id': subimgname + '.png', 'type_id': obj['type_id'],
+                              'type_name': obj['type_name'], 'area': obj['area'], 'difficult': 0}
+                # properties['ingest_time'] = obj['ingest_time']
+
+                _dict = {'geometry': geometry, 'properties': properties, 'type': 'Feature'}
+                features.append(_dict)
+
+            elif half_iou > 0:
+                # elif (half_iou > self.thresh):
+                ##  print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                inter_poly = shgeo.polygon.orient(inter_poly, sign=1)
+                out_poly = list(inter_poly.exterior.coords)[0: -1]
+                if len(out_poly) < 4:
                     continue
-                inter_poly, half_iou = self.calchalf_iou(gtpoly, imgpoly)
 
-                # print('writing...')
-                if (half_iou == 1):
-                    polyInsub = self.polyorig2sub(left, up, obj['poly'])
-                    outline = ' '.join(list(map(str, polyInsub)))
-                    outline = outline + ' ' + obj['name'] + ' ' + str(obj['difficult'])
-                    f_out.write(outline + '\n')
-                elif (half_iou > 0):
-                #elif (half_iou > self.thresh):
-                  ##  print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-                    inter_poly = shgeo.polygon.orient(inter_poly, sign=1)
-                    out_poly = list(inter_poly.exterior.coords)[0: -1]
-                    if len(out_poly) < 4:
-                        continue
+                out_poly2 = []
+                for i in range(len(out_poly)):
+                    out_poly2.append(out_poly[i][0])
+                    out_poly2.append(out_poly[i][1])
 
-                    out_poly2 = []
-                    for i in range(len(out_poly)):
-                        out_poly2.append(out_poly[i][0])
-                        out_poly2.append(out_poly[i][1])
+                if len(out_poly) == 5:
+                    # print('==========================')
+                    out_poly2 = self.GetPoly4FromPoly5(out_poly2)
+                elif len(out_poly) > 5:
+                    """
+                        if the cut instance is a polygon with points more than 5, we do not handle it currently
+                    """
+                    continue
+                if (self.choosebestpoint):
+                    out_poly2 = choose_best_pointorder_fit_another(out_poly2, obj['poly'])
 
-                    if (len(out_poly) == 5):
-                        #print('==========================')
-                        out_poly2 = self.GetPoly4FromPoly5(out_poly2)
-                    elif (len(out_poly) > 5):
-                        """
-                            if the cut instance is a polygon with points more than 5, we do not handle it currently
-                        """
-                        continue
-                    if (self.choosebestpoint):
-                        out_poly2 = choose_best_pointorder_fit_another(out_poly2, obj['poly'])
+                polyInsub = self.polyorig2sub(left, up, out_poly2)
+                for index, item in enumerate(polyInsub):
+                    if (item <= 1):
+                        polyInsub[index] = 1
+                    elif (item >= self.subsize):
+                        polyInsub[index] = self.subsize
+                imcoords = ','.join(list(map(str, polyInsub)))
+                properties = {}
+                if (half_iou > self.thresh):
+                    # outline = imcoords + ' ' + obj['type_name'] + ' ' + str(obj['difficult'])
+                    # print(outline)
+                    properties['difficult'] = obj['difficult']
+                else:
+                    ## if the left part is too small, label as '2'
+                    # outline = imcoords + ' ' + obj['type_name'] + ' ' + '2'
+                    # print(outline)
+                    properties['difficult'] = 2
+                # f_out.write(outline + '\n')
 
-                    polyInsub = self.polyorig2sub(left, up, out_poly2)
+                properties['object_imcoords'] = imcoords
+                properties['object_angle'] = obj['angle']
+                properties['building_imcoords'] = 'EMPTY'
+                properties['road_imcoords'] = 'EMPTY'
+                properties['image_id'] = subimgname + '.png'
+                # properties['ingest_time'] = obj['ingest_time']
+                properties['type_id'] = obj['type_id']
+                properties['type_name'] = obj['type_name']
+                properties['area'] = obj['area']
 
-                    for index, item in enumerate(polyInsub):
-                        if (item <= 1):
-                            polyInsub[index] = 1
-                        elif (item >= self.subsize):
-                            polyInsub[index] = self.subsize
-                    outline = ' '.join(list(map(str, polyInsub)))
-                    if (half_iou > self.thresh):
-                        outline = outline + ' ' + obj['name'] + ' ' + str(obj['difficult'])
-                    else:
-                        ## if the left part is too small, label as '2'
-                        outline = outline + ' ' + obj['name'] + ' ' + '2'
-                    f_out.write(outline + '\n')
-                #else:
-                 #   mask_poly.append(inter_poly)
-        self.saveimagepatches(resizeimg, subimgname, left, up)
+                _dict = {'geometry': geometry, 'properties': properties, 'type': 'Feature'}
+                features.append(_dict)
+
+            # # else:
+            # #   mask_poly.append(inter_poly)
+
+        with open(outdir, "w") as json_file:
+            json.dump(anno, json_file)
+
+        self.save_image_patches(resizeimg, subimgname, left, up)
 
     def SplitSingle(self, name, rate, extent):
         """
@@ -209,14 +254,15 @@ class splitbase():
         img = cv2.imread(os.path.join(self.imagepath, name + extent))
         if np.shape(img) == ():
             return
-        fullname = os.path.join(self.labelpath, name + '.txt')
-        objects = util.parse_dota_poly2(fullname)
+        fullname = os.path.join(self.labelpath, name + '.json')
+        objects = parse_dota_poly(fullname)
         for obj in objects:
-            obj['poly'] = list(map(lambda x:rate*x, obj['poly']))
-            #obj['poly'] = list(map(lambda x: ([2 * y for y in x]), obj['poly']))
+            obj['poly'] = TuplePoly2Poly(obj['poly'])
+            obj['poly'] = list(map(lambda x: rate * x, obj['poly']))
+            # obj['poly'] = list(map(lambda x: ([2 * y for y in x]), obj['poly']))
 
         if (rate != 1):
-            resizeimg = cv2.resize(img, None, fx=rate, fy=rate, interpolation = cv2.INTER_CUBIC)
+            resizeimg = cv2.resize(img, None, fx=rate, fy=rate, interpolation=cv2.INTER_CUBIC)
         else:
             resizeimg = img
         outbasename = name + '__' + str(rate) + '__'
@@ -255,12 +301,51 @@ class splitbase():
         for name in imagenames:
             self.SplitSingle(name, rate, self.ext)
 
-if __name__ == '__main__':
-    # example usage of ImgSplit
-    # split = splitbase(r'/data/dj/dota/trainval_large',
-    #                    r'/data/dj/dota/trainval_large-split-1024')
-    split = splitbase(r'/data/dj/dota/val',
-                       r'/data/dj/dota/val_1024_debugmulti-process') ## time cost: 4minute 16s
-    # split.splitdata(1)
-    # split.splitdata(2)
-    split.splitdata(0.4)
+
+def parse_dota_poly(filename):
+    """
+        parse the dota ground truth in the format:
+        [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+    """
+    f = []
+    if (sys.version_info >= (3, 5)):
+        fd = open(filename, 'r')
+        f = fd
+    elif (sys.version_info >= 2.7):
+        fd = codecs.open(filename, 'r')
+        f = fd
+
+    with open(filename) as json_file:
+        json_data = json.load(json_file)
+    features = json_data['features']
+
+    objects = []
+    for f in features:
+        object_struct = {}
+        object_struct['angle'] = f['properties']['object_angle']
+        object_struct['image_id'] = f['properties']['image_id']
+        object_struct['difficult'] = '0'
+        object_struct['type_id'] = f['properties']['type_id']
+        object_struct['type_name'] = f['properties']['type_name']
+        imcoords = f['properties']['object_imcoords'].split(',')
+        object_struct['poly'] = [(float(imcoords[0]), float(imcoords[1])),
+                                 (float(imcoords[2]), float(imcoords[3])),
+                                 (float(imcoords[4]), float(imcoords[5])),
+                                 (float(imcoords[6]), float(imcoords[7]))
+                                 ]
+        gtpoly = shgeo.Polygon(object_struct['poly'])
+        object_struct['area'] = gtpoly.area
+        objects.append(object_struct)
+
+    return objects
+
+#
+# if __name__ == '__main__':
+#     # example usage of ImgSplit
+#     # split = splitbase(r'/data/dj/dota/trainval_large',
+#     #                    r'/data/dj/dota/trainval_large-split-1024')
+#     split = splitbase(r'/data/dj/dota/val',
+#                        r'/data/dj/dota/val_1024_debugmulti-process') ## time cost: 4minute 16s
+#     # split.splitdata(1)
+#     # split.splitdata(2)
+#     split.splitdata(0.4)

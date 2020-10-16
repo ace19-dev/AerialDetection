@@ -53,7 +53,11 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr
     if not os.path.exists('../submit'):
         os.makedirs('../submit')
 
+<<<<<<< HEAD
     fout = open('../submit/%s_submission.csv' % '',
+=======
+    fout = open('../submit/%s_submission.csv' % '6',
+>>>>>>> b036e9f6c22d01d223c9eda548bfd9c4a76d80fa
                 'w', encoding='UTF-8', newline='')
     writer = csv.writer(fout)
     writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',
@@ -138,7 +142,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
     parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_r50_fpn_1x_dota.py',
                         help='test config file path')
+<<<<<<< HEAD
     parser.add_argument('--checkpoint', default='../pretrained/epoch_18.pth',
+=======
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_52.pth',
+>>>>>>> b036e9f6c22d01d223c9eda548bfd9c4a76d80fa
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')
