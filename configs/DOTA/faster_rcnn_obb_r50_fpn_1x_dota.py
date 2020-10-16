@@ -25,7 +25,7 @@ model = dict(
         in_channels=256,
         feat_channels=256,
         anchor_scales=[4],
-        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -68,7 +68,7 @@ train_cfg = dict(
             pos_fraction=0.5,
             neg_pos_ub=-1,
             add_gt_as_proposals=False),
-        allowed_border=-1,
+        allowed_border=0,
         pos_weight=-1,
         debug=False),
     rpn_proposal=dict(
@@ -96,9 +96,9 @@ train_cfg = dict(
 test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
+        nms_pre=2000,
+        nms_post=2000,
+        max_num=2000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
@@ -118,12 +118,12 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train/train.json',
-        img_prefix=data_root + 'train/images',
-        # img_scale=[(1280, 640)],
-        # multiscale_mode='range',    # TODO: value
-        img_scale=[(1024, 1024)],
-        multiscale_mode='value',
+        ann_file=data_root + 'patch/train.json',
+        img_prefix=data_root + 'patch/images',
+        img_scale=[(1280, 768)],
+        multiscale_mode='range',
+        # img_scale=[(1024, 1024)],
+        # multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -134,16 +134,16 @@ data = dict(
           scale=1.0,
           rotate_range=(-180, 180),
         ),
-        # extra_aug=dict(
-        #     # random_crop=dict(
-        #     #
-        #     # ),
-        #     photo_metric_distortion=dict(
-        #         brightness_delta=32,
-        #         contrast_range=(0.2, 1.2),
-        #         saturation_range=(0.2, 1.2),
-        #         hue_delta=18),
-        #     ),
+        extra_aug=dict(
+            # random_crop=dict(
+            #
+            # ),
+            photo_metric_distortion=dict(
+                brightness_delta=32,
+                contrast_range=(0.1, 1.1),
+                saturation_range=(0.1, 1.1),
+                hue_delta=18),
+            ),
         ),
     val=dict(
         type=dataset_type,
@@ -163,6 +163,8 @@ data = dict(
         # ann_file=data_root + 'test1024_ms/DOTA_test1024_ms.json',
         # img_prefix=data_root + 'test1024_ms/images',
         img_scale=(1024, 1024),
+        # img_scale=[(1280, 768)],
+        # multiscale_mode='range',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -184,7 +186,7 @@ lr_config = dict(
     # gamma=0.2,
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    step=[56, 70])
+    step=[16, 23])
 checkpoint_config = dict(interval=2)
 
 log_config = dict(
@@ -195,7 +197,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 72
+total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_dota'

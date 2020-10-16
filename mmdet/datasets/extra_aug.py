@@ -91,90 +91,90 @@ class Expand(object):
 
 # TODO: edit
 class RandomCrop(object):
-    # def __init__(self, min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3):
-    #     # 1: return ori img
-    #     self.sample_mode = (1, *min_ious, 0)
-    #     self.min_crop_size = min_crop_size
-    #
-    # def __call__(self, img, boxes, labels):
-    #     h, w, c = img.shape
-    #     while True:
-    #         mode = random.choice(self.sample_mode)
-    #         if mode == 1:
-    #             return img, boxes, labels
-    #
-    #         min_iou = mode
-    #         for i in range(50):
-    #             new_w = random.uniform(self.min_crop_size * w, w)
-    #             new_h = random.uniform(self.min_crop_size * h, h)
-    #
-    #             # h / w in [0.5, 2]
-    #             if new_h / new_w < 0.5 or new_h / new_w > 2:
-    #                 continue
-    #
-    #             left = random.uniform(w - new_w)
-    #             top = random.uniform(h - new_h)
-    #
-    #             patch = np.array((int(left), int(top), int(left + new_w),
-    #                               int(top + new_h)))
-    #             overlaps = bbox_overlaps(
-    #                 patch.reshape(-1, 4), boxes.reshape(-1, 4)).reshape(-1)
-    #             if overlaps.min() < min_iou:
-    #                 continue
-    #
-    #             # center of boxes should inside the crop img
-    #             center = (boxes[:, :2] + boxes[:, 2:]) / 2
-    #             mask = (center[:, 0] > patch[0]) * (
-    #                     center[:, 1] > patch[1]) * (center[:, 0] < patch[2]) * (
-    #                            center[:, 1] < patch[3])
-    #             if not mask.any():
-    #                 continue
-    #             boxes = boxes[mask]
-    #             labels = labels[mask]
-    #
-    #             # adjust boxes
-    #             img = img[patch[1]:patch[3], patch[0]:patch[2]]
-    #             boxes[:, 2:] = boxes[:, 2:].clip(max=patch[2:])
-    #             boxes[:, :2] = boxes[:, :2].clip(min=patch[:2])
-    #             boxes -= np.tile(patch[:2], 2)
-    #
-    #             return img, boxes, labels
-
-    def __init__(self, crop_size=(512, 512), allow_negative_crop=False):
-        assert crop_size[0] > 0 and crop_size[1] > 0
-        self.crop_size = crop_size
-        self.allow_negative_crop = allow_negative_crop
+    def __init__(self, min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3):
+        # 1: return ori img
+        self.sample_mode = (1, *min_ious, 0)
+        self.min_crop_size = min_crop_size
 
     def __call__(self, img, boxes, labels):
-        crop_image = None
-        for i in range(len(img)):
-            margin_h = max(img.shape[0] - self.crop_size[0], 0)
-            margin_w = max(img.shape[1] - self.crop_size[1], 0)
-            offset_h = np.random.randint(0, margin_h + 1)
-            offset_w = np.random.randint(0, margin_w + 1)
-            crop_y1, crop_y2 = offset_h, offset_h + self.crop_size[0]
-            crop_x1, crop_x2 = offset_w, offset_w + self.crop_size[1]
+        h, w, c = img.shape
+        while True:
+            mode = random.choice(self.sample_mode)
+            if mode == 1:
+                return img, boxes, labels
 
-            # crop the image
-            img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
-            img_shape = img.shape
+            min_iou = mode
+            for i in range(50):
+                new_w = random.uniform(self.min_crop_size * w, w)
+                new_h = random.uniform(self.min_crop_size * h, h)
 
-            # crop bboxes accordingly and clip to the image boundary
-            bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h],
-                                   dtype=np.float32)
-            bboxes = boxes - bbox_offset
-            bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, img_shape[1])
-            bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, img_shape[0])
-            valid_inds = (bboxes[:, 2] > bboxes[:, 0]) & (
-                    bboxes[:, 3] > bboxes[:, 1])
-            # If the crop does not contain any gt-bbox area and
-            # self.allow_negative_crop is False, skip this image.
-            if (not valid_inds.any() and not self.allow_negative_crop):
-                return None
+                # h / w in [0.5, 2]
+                if new_h / new_w < 0.5 or new_h / new_w > 2:
+                    continue
 
-            val_bboxes = bboxes[valid_inds, :]
+                left = random.uniform(w - new_w)
+                top = random.uniform(h - new_h)
 
-        return img, val_bboxes, labels
+                patch = np.array((int(left), int(top), int(left + new_w),
+                                  int(top + new_h)))
+                overlaps = bbox_overlaps(
+                    patch.reshape(-1, 4), boxes.reshape(-1, 4)).reshape(-1)
+                if overlaps.min() < min_iou:
+                    continue
+
+                # center of boxes should inside the crop img
+                center = (boxes[:, :2] + boxes[:, 2:]) / 2
+                mask = (center[:, 0] > patch[0]) * (
+                        center[:, 1] > patch[1]) * (center[:, 0] < patch[2]) * (
+                               center[:, 1] < patch[3])
+                if not mask.any():
+                    continue
+                boxes = boxes[mask]
+                labels = labels[mask]
+
+                # adjust boxes
+                img = img[patch[1]:patch[3], patch[0]:patch[2]]
+                boxes[:, 2:] = boxes[:, 2:].clip(max=patch[2:])
+                boxes[:, :2] = boxes[:, :2].clip(min=patch[:2])
+                boxes -= np.tile(patch[:2], 2)
+
+                return img, boxes, labels
+
+    # def __init__(self, crop_size=(512, 512), allow_negative_crop=False):
+    #     assert crop_size[0] > 0 and crop_size[1] > 0
+    #     self.crop_size = crop_size
+    #     self.allow_negative_crop = allow_negative_crop
+    #
+    # def __call__(self, img, boxes, labels):
+    #     crop_image = None
+    #     for i in range(len(img)):
+    #         margin_h = max(img.shape[0] - self.crop_size[0], 0)
+    #         margin_w = max(img.shape[1] - self.crop_size[1], 0)
+    #         offset_h = np.random.randint(0, margin_h + 1)
+    #         offset_w = np.random.randint(0, margin_w + 1)
+    #         crop_y1, crop_y2 = offset_h, offset_h + self.crop_size[0]
+    #         crop_x1, crop_x2 = offset_w, offset_w + self.crop_size[1]
+    #
+    #         # crop the image
+    #         img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
+    #         img_shape = img.shape
+    #
+    #         # crop bboxes accordingly and clip to the image boundary
+    #         bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h],
+    #                                dtype=np.float32)
+    #         bboxes = boxes - bbox_offset
+    #         bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, img_shape[1])
+    #         bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, img_shape[0])
+    #         valid_inds = (bboxes[:, 2] > bboxes[:, 0]) & (
+    #                 bboxes[:, 3] > bboxes[:, 1])
+    #         # If the crop does not contain any gt-bbox area and
+    #         # self.allow_negative_crop is False, skip this image.
+    #         if (not valid_inds.any() and not self.allow_negative_crop):
+    #             return None
+    #
+    #         val_bboxes = bboxes[valid_inds, :]
+    #
+    #     return img, val_bboxes, labels
 
 
 class ExtraAugmentation(object):

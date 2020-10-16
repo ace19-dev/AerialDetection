@@ -2,7 +2,9 @@ import os
 import numpy as np
 import cv2
 import copy
+from tqdm import tqdm
 import dota_utils as util
+
 
 class splitbase():
     def __init__(self,
@@ -19,6 +21,7 @@ class splitbase():
         self.srcpath = srcpath
         self.dstpath = dstpath
         self.ext = ext
+
     def saveimagepatches(self, img, subimgname, left, up):
         subimg = copy.deepcopy(img[up: (up + self.subsize), left: (left + self.subsize)])
         outdir = os.path.join(self.dstpath, subimgname + self.ext)
@@ -29,14 +32,14 @@ class splitbase():
         assert np.shape(img) != ()
 
         if (rate != 1):
-            resizeimg = cv2.resize(img, None, fx=rate, fy=rate, interpolation = cv2.INTER_CUBIC)
+            resizeimg = cv2.resize(img, None, fx=rate, fy=rate, interpolation=cv2.INTER_CUBIC)
         else:
             resizeimg = img
         outbasename = name + '__' + str(rate) + '__'
 
         weight = np.shape(resizeimg)[1]
         height = np.shape(resizeimg)[0]
-        
+
         left, up = 0, 0
         while (left < weight):
             if (left + self.subsize >= weight):
@@ -57,11 +60,12 @@ class splitbase():
                 left = left + self.slide
 
     def splitdata(self, rate):
-        
         imagelist = util.GetFileFromThisRootDir(self.srcpath)
         imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
-        for name in imagenames:
+        for name in tqdm(imagenames):
             self.SplitSingle(name, rate, self.ext)
+
+
 if __name__ == '__main__':
     split = splitbase(r'/home/dingjian/data/GF3Process/tiff',
                       r'/home/dingjian/data/GF3Process/subimg',

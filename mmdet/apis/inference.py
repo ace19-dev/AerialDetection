@@ -253,13 +253,13 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
         # left_top = (bbox_int[0], bbox_int[1])
         label_text = class_names[label] if class_names is not None else f'cls {label}'
 
-        # cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
-        # for i in range(3):
-        #     cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
-        #              color=color_green, thickness=1)
-        # cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
-        # cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
-        #             color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
+        cv2.circle(img, (bbox_int[0], bbox_int[1]), 3, (0, 0, 255), -1)
+        for i in range(3):
+            cv2.line(img, (bbox_int[i * 2], bbox_int[i * 2 + 1]), (bbox_int[(i + 1) * 2], bbox_int[(i + 1) * 2 + 1]),
+                     color=color_green, thickness=1)
+        cv2.line(img, (bbox_int[6], bbox_int[7]), (bbox_int[0], bbox_int[1]), color=color_green, thickness=1)
+        cv2.putText(img, '%s %.3f' % (label_text, score), (bbox_int[0], bbox_int[1] - 10),
+                    color=color_white, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8)
 
         # submit object
         object['file_name'] = img_name
@@ -273,7 +273,7 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
 
     # if show:
     #     mmcv.imshow(img, img_name, 0)
-    # if out_file is not None:
-    #     mmcv.imwrite(img, out_file)
+    if out_file is not None:
+        mmcv.imwrite(img, out_file)
 
     return results

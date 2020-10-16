@@ -25,7 +25,7 @@ model = dict(
         in_channels=256,
         feat_channels=256,
         anchor_scales=[4],  # original 8
-        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -131,9 +131,9 @@ test_cfg = dict(
     rpn=dict(
         # TODO: test nms 2000
         nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
+        nms_pre=2000,
+        nms_post=2000,
+        max_num=2000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
@@ -162,13 +162,11 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_fold2/train.json',
-        img_prefix=data_root + 'train_fold2/images',
+        ann_file=data_root + 'train/train.json',
+        img_prefix=data_root + 'train/images',
         img_scale=[(1536, 768)],
         multiscale_mode='range',
-        # img_scale=[(1024, 1024), (768, 768), (512, 512),
-        #            (1024, 768), (768, 1024), (768, 512),
-        #            (512, 768)],
+        # img_scale=[(896, 896)],
         # multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -181,11 +179,10 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
-            # # TODO: bugfix
+            # # # TODO: bugfix
             # random_crop=dict(
-            #     # min_ious=(0.5, 0.7, 0.9),
-            #     # min_crop_size=0.5
-            #     crop_size=(512, 512)
+            #     min_ious=(0.5, 0.7),
+            #     min_crop_size=0.5
             # ),
             photo_metric_distortion=dict(
                 brightness_delta=32,
@@ -219,10 +216,10 @@ data = dict(
 )
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=3, metric='bbox')
+evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.003, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -231,9 +228,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1500,
-    warmup_ratio=0.01,
-    step=[16, 22])  # when using 'step' policy
+    warmup_iters=500,
+    warmup_ratio=1.0 / 3,
+    step=[12, 23])
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -241,7 +238,7 @@ lr_config = dict(
 #     warmup_ratio=1.0 / 10,
 #     min_lr_ratio=1e-5)
 
-checkpoint_config = dict(interval=3)
+checkpoint_config = dict(interval=2)
 log_config = dict(
     interval=50,
     hooks=[
