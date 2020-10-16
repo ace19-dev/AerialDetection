@@ -23,7 +23,8 @@ model = dict(
         in_channels=256,
         feat_channels=256,
         anchor_scales=[4],  # original 8
-        anchor_ratios=[0.5, 1.0, 2.0],
+        # anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -129,9 +130,9 @@ test_cfg = dict(
     rpn=dict(
         # TODO: test nms 2000
         nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
+        nms_pre=2000,
+        nms_post=2000,
+        max_num=2000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
@@ -158,12 +159,12 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train/train.json',
-        img_prefix=data_root + 'train/images',
-        # img_scale=[(1024, 512)],
-        # multiscale_mode='range',
-        img_scale=[(512, 512)],
-        multiscale_mode='value',
+        ann_file=data_root + 'patch/train.json',
+        img_prefix=data_root + 'patch/images',
+        img_scale=[(1280, 768)],
+        multiscale_mode='range',
+        # img_scale=[(512, 512)],
+        # multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -182,10 +183,10 @@ data = dict(
             # crop_size=(512, 512)
             # ),
             photo_metric_distortion=dict(
-                brightness_delta=16,
+                brightness_delta=32,
                 contrast_range=(0.1, 1.1),
                 saturation_range=(0.1, 1.1),
-                hue_delta=9),
+                hue_delta=18),
         ),
     ),
     val=dict(
@@ -204,6 +205,8 @@ data = dict(
         ann_file=data_root + 'baseline_test/test.json',
         img_prefix=data_root + 'test/images',
         img_scale=(1024, 1024),
+        # img_scale=[(1280, 768)],
+        # multiscale_mode='range',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -216,7 +219,7 @@ data = dict(
 evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.006, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -225,9 +228,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=500,
-    warmup_ratio=0.01,
-    step=[56, 70])  # when using 'step' policy
+    warmup_iters=3000,
+    warmup_ratio=1.0 / 3,
+    step=[14, 23])  # when using 'step' policy
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -244,7 +247,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 72
+total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

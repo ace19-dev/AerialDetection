@@ -184,9 +184,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=500,
+    warmup_iters=3000,
     warmup_ratio=1.0 / 3,
-    step=[16, 23])
+    step=[14, 23])
 checkpoint_config = dict(interval=2)
 
 log_config = dict(

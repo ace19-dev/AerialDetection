@@ -162,9 +162,9 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train/train.json',
-        img_prefix=data_root + 'train/images',
-        img_scale=[(1536, 768)],
+        ann_file=data_root + 'patch/train.json',
+        img_prefix=data_root + 'patch/images',
+        img_scale=[(1280, 768)],
         multiscale_mode='range',
         # img_scale=[(896, 896)],
         # multiscale_mode='value',
@@ -207,6 +207,8 @@ data = dict(
         ann_file=data_root + 'baseline_test/test.json',
         img_prefix=data_root + 'baseline_test/images',
         img_scale=(1024, 1024),
+        # img_scale=[(1280, 768)],
+        # multiscale_mode='range',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -219,7 +221,7 @@ data = dict(
 evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.003, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -228,9 +230,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=500,
+    warmup_iters=3000,
     warmup_ratio=1.0 / 3,
-    step=[12, 23])
+    step=[14, 23])
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
