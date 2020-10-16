@@ -144,7 +144,7 @@ class Expand(object):
         return img, boxes, labels
 
 
-# TODO: edit
+# TODO: bugfix
 class RandomCrop(object):
     def __init__(self, min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3):
         # 1: return ori img
@@ -317,6 +317,7 @@ class MinIoURandomCrop(object):
                 for key in results.get('seg_fields', []):
                     results[key] = results[key][patch[1]:patch[3],
                                                 patch[0]:patch[2]]
+                # TODO: fix
                 return results
                 # return results['img'], boxes, labels
 
@@ -362,6 +363,7 @@ class Corrupt(object):
             results['img'].astype(np.uint8),
             corruption_name=self.corruption,
             severity=self.severity)
+        # TODO: fix
         return results
 
     def __repr__(self):
@@ -887,6 +889,7 @@ class RandomCenterCropPad(object):
             ' please set "to_float32=True" in "LoadImageFromFile" pipeline')
         h, w, c = img.shape
         assert c == len(self.mean)
+        # TODO: fix
         if self.test_mode:
             return self._test_aug(results)
         else:
@@ -966,7 +969,7 @@ class CutOut(object):
             x2 = np.clip(x1 + cutout_w, 0, w)
             y2 = np.clip(y1 + cutout_h, 0, h)
             results['img'][y1:y2, x1:x2, :] = self.fill_in
-
+        # TODO: fix
         return results
 
     def __repr__(self):
