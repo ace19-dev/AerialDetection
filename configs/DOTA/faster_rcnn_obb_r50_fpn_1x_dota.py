@@ -136,7 +136,6 @@ data = dict(
         ),
         extra_aug=dict(
             # random_crop=dict(
-            #
             # ),
             photo_metric_distortion=dict(
                 brightness_delta=32,
