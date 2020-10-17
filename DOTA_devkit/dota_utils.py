@@ -214,7 +214,7 @@ def dots2ToRec8(rec):
     return xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax
 
 
-def groundtruth2Task1(srcpath, dstpath):
+def groundtruth2task(srcpath, dstpath):
     filelist = GetFileFromThisRootDir(srcpath)
     # names = [custombasename(x.strip())for x in filelist]
 
@@ -223,7 +223,7 @@ def groundtruth2Task1(srcpath, dstpath):
 
     file_dict = {}
     for cls in wordname_15:
-        fd = open(os.path.join(dstpath, 'Task1_') + cls + r'.txt', 'w')
+        fd = open(os.path.join(dstpath, 'task_') + cls + r'.txt', 'w')
         file_dict[cls] = fd
 
     for fpath in filelist:
@@ -234,28 +234,32 @@ def groundtruth2Task1(srcpath, dstpath):
         rate = re.findall(pattern2, subname)[0]
 
         for obj in objects:
-            category = ID2CAT[obj['class_id']]
+            class_id = obj['class_id']
+            # TODO: check effect of difficult on accuracy.
             # difficult = obj['difficult']
             poly = [obj['point1_x'], obj['point1_y'], obj['point2_x'], obj['point2_y'],
                     obj['point3_x'], obj['point3_y'], obj['point4_x'], obj['point4_y']]
             # if difficult == '2':
             #     continue
             if rate == '0.5':
-                outline = custombasename(fpath) + ' ' + '1' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + str(int(class_id)+1) + ' ' + '1' + ' ' + ' '.join(map(str, poly))
             elif rate == '1':
-                outline = custombasename(fpath) + ' ' + '0.8' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + str(int(class_id)+1) + ' ' + '0.8' + ' ' + ' '.join(map(str, poly))
             elif rate == '2':
-                outline = custombasename(fpath) + ' ' + '0.6' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + str(int(class_id)+1) + ' ' + '0.6' + ' ' + ' '.join(map(str, poly))
 
-            file_dict[category].write(outline + '\n')
+            file_dict[ID2CAT[class_id]].write(outline + '\n')
 
 
-def Task2groundtruth_poly(srcpath, dstpath):
+def task2groundtruth_poly(srcpath, dstpath):
     thresh = 0.1
     file_dict = {}
-    Tasklist = GetFileFromThisRootDir(srcpath, '.txt')
+    tasklist = GetFileFromThisRootDir(srcpath, '.txt')
 
-    for Taskfile in Tasklist:
+    if not os.path.exists(dstpath):
+        os.makedirs(dstpath)
+
+    for Taskfile in tasklist:
         idname = custombasename(Taskfile).split('_')[-1]
         # idname = datamap_inverse[idname]
         f = open(Taskfile, 'r')

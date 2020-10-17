@@ -19,14 +19,14 @@ nms_thresh = 0.1
 
 
 def py_cpu_nms_poly(dets, thresh):
-    scores = dets[:, 8]
+    scores = dets[:, 1]
     polys = []
     areas = []
     for i in range(len(dets)):
-        tm_polygon = polyiou.VectorDouble([dets[i][0], dets[i][1],
-                                           dets[i][2], dets[i][3],
+        tm_polygon = polyiou.VectorDouble([dets[i][2], dets[i][3],
                                            dets[i][4], dets[i][5],
-                                           dets[i][6], dets[i][7]])
+                                           dets[i][6], dets[i][7],
+                                           dets[i][8], dets[i][9]])
         polys.append(tm_polygon)
     order = scores.argsort()[::-1]
 
@@ -130,7 +130,6 @@ def poly2origpoly(poly, x, y, rate):
         origpoly.append(tmp_y)
     return origpoly
 
-
 def mergebase(srcpath, dstpath, nms):
     assert os.path.exists(srcpath), "The srcpath is not exists!"
     filelist = util.GetFileFromThisRootDir(srcpath)
@@ -138,51 +137,101 @@ def mergebase(srcpath, dstpath, nms):
     for fullname in filelist:
         name = util.custombasename(fullname)
         # print('name:', name)
-        dstname = os.path.join(dstpath, name + '.json')
-        with open(fullname) as json_file:
-            json_data = json.load(json_file)
-        contents = json_data['content']
-        # with open(fullname, 'r') as f_in:
-        namebox_dict = {}
-        #     lines = f_in.readlines()
-        #     splitlines = [x.strip().split(' ') for x in lines]
-        for content in contents:
-            subname = content['file_name']
-            splitname = subname.split('__')
-            oriname = splitname[0]
-            pattern1 = re.compile(r'__\d+___\d+')
-            # print('subname:', subname)
-            x_y = re.findall(pattern1, subname)
-            x_y_2 = re.findall(r'\d+', x_y[0])
-            x, y = int(x_y_2[0]), int(x_y_2[1])
+        dstname = os.path.join(dstpath, name + '.txt')
+        with open(fullname, 'r') as f_in:
+            nameboxdict = {}
+            lines = f_in.readlines()
+            splitlines = [x.strip().split(' ') for x in lines]
+            for splitline in splitlines:
+                subname = splitline[0]
+                splitname = subname.split('__')
+                oriname = splitname[0]
+                pattern1 = re.compile(r'__\d+___\d+')
+                # print('subname:', subname)
+                x_y = re.findall(pattern1, subname)
+                x_y_2 = re.findall(r'\d+', x_y[0])
+                x, y = int(x_y_2[0]), int(x_y_2[1])
 
-            pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
-            rate = re.findall(pattern2, subname)[0]
+                pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
 
-            confidence = content['confidence']
-            p = [content['point1_x'], content['point1_y'], content['point2_x'], content['point2_y'],
-                 content['point3_x'], content['point3_y'], content['point4_x'], content['point4_y']]
-            poly = list(map(float, p))
-            origpoly = poly2origpoly(poly, x, y, rate)
-            det = origpoly
-            det.insert(0, confidence)
-            det = list(map(float, det))
-            det.insert(0, int(content['class_id']))
-            if oriname not in namebox_dict:
-                namebox_dict[oriname] = []
-            namebox_dict[oriname].append(det)
+                rate = re.findall(pattern2, subname)[0]
 
-        nameboxnmsdict = nms_namedict(namebox_dict, nms, nms_thresh)
-        with open(dstname, 'w') as f_out:
-            for imgname in nameboxnmsdict:
-                for det in nameboxnmsdict[imgname]:
-                    # print('det:', det)
-                    class_id = det[0]
-                    confidence = det[1]
-                    bbox = det[2:]
-                    outline = imgname + ' ' + str(class_id) + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
-                    print('outline:', outline)
-                    f_out.write(outline + '\n')
+                class_id = splitline[1]
+                confidence = splitline[2]
+                poly = list(map(float, splitline[3:]))
+                origpoly = poly2origpoly(poly, x, y, rate)
+                det = origpoly
+                det.insert(0, confidence)
+                det = list(map(float, det))
+                det.insert(0, int(class_id))
+                if (oriname not in nameboxdict):
+                    nameboxdict[oriname] = []
+                nameboxdict[oriname].append(det)
+            nameboxnmsdict = nms_namedict(nameboxdict, nms, nms_thresh)
+            with open(dstname, 'w') as f_out:
+                for imgname in nameboxnmsdict:
+                    for det in nameboxnmsdict[imgname]:
+                        # print('det:', det)
+                        class_id = det[0]
+                        confidence = det[1]
+                        bbox = det[2:]
+                        outline = imgname + ' ' + str(class_id) + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
+                        # print('outline:', outline)
+                        f_out.write(outline + '\n')
+
+
+# def mergebase(srcpath, dstpath, nms):
+#     assert os.path.exists(srcpath), "The srcpath is not exists!"
+#     filelist = util.GetFileFromThisRootDir(srcpath)
+#     assert os.path.exists(dstpath), "The dstpath is not exists!"
+#     for fullname in filelist:
+#         name = util.custombasename(fullname)
+#         # print('name:', name)
+#         dstname = os.path.join(dstpath, name + '.json')
+#         with open(fullname) as json_file:
+#             json_data = json.load(json_file)
+#         contents = json_data['content']
+#         # with open(fullname, 'r') as f_in:
+#         namebox_dict = {}
+#         #     lines = f_in.readlines()
+#         #     splitlines = [x.strip().split(' ') for x in lines]
+#         for content in contents:
+#             subname = content['file_name']
+#             splitname = subname.split('__')
+#             oriname = splitname[0]
+#             pattern1 = re.compile(r'__\d+___\d+')
+#             # print('subname:', subname)
+#             x_y = re.findall(pattern1, subname)
+#             x_y_2 = re.findall(r'\d+', x_y[0])
+#             x, y = int(x_y_2[0]), int(x_y_2[1])
+#
+#             pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
+#             rate = re.findall(pattern2, subname)[0]
+#
+#             confidence = content['confidence']
+#             p = [content['point1_x'], content['point1_y'], content['point2_x'], content['point2_y'],
+#                  content['point3_x'], content['point3_y'], content['point4_x'], content['point4_y']]
+#             poly = list(map(float, p))
+#             origpoly = poly2origpoly(poly, x, y, rate)
+#             det = origpoly
+#             det.insert(0, confidence)
+#             det = list(map(float, det))
+#             det.insert(0, int(content['class_id']))
+#             if oriname not in namebox_dict:
+#                 namebox_dict[oriname] = []
+#             namebox_dict[oriname].append(det)
+#
+#         nameboxnmsdict = nms_namedict(namebox_dict, nms, nms_thresh)
+#         with open(dstname, 'w') as f_out:
+#             for imgname in nameboxnmsdict:
+#                 for det in nameboxnmsdict[imgname]:
+#                     # print('det:', det)
+#                     class_id = det[0]
+#                     confidence = det[1]
+#                     bbox = det[2:]
+#                     outline = imgname + ' ' + str(class_id) + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
+#                     print('outline:', outline)
+#                     f_out.write(outline + '\n')
 
 
 def mergebyrec(srcpath, dstpath):
