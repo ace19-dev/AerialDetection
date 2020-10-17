@@ -29,6 +29,7 @@ def get_time_str():
 
 def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.3):
     model.eval()
+
     results = []
     submit_results = []
     dataset = data_loader.dataset
@@ -40,19 +41,25 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr
 
         # if show:
         # model.module.show_result(data, result, dataset.img_norm_cfg)
+        ori_file_name = data['img_meta'][0].data[0][0]['filename'].split('__')[0]
+        # print(ori_file_name)
 
         # show DOTA coordinate
         new_result = show_obb_result(data, result, dataset.img_norm_cfg, dataset.CLASSES,
-                                     show=show, score_thr=show_score_thr, out_file=out_dir + '/images')
-        submit_results.extend(new_result)
-        # print('#######: ', data)
-        # print('#####: ', new_result)
-        filename = new_result[0]['file_name'][:-4] + '.json'
-        outpath = os.path.join(out_dir, 'json')
-        if not os.path.exists(outpath):
-            os.makedirs(outpath)
+                                     show=show, score_thr=show_score_thr,
+                                     out_file=os.path.join(out_dir, 'images', ori_file_name))
+        if len(new_result) == 0:
+            continue
 
-        with open(os.path.join(outpath, filename), "w") as json_file:
+        # # for submit
+        # submit_results.extend(new_result)
+
+        filename = new_result[0]['file_name'][:-4] + '.json'
+        out_json_path = os.path.join(out_dir, 'json', ori_file_name)
+        if not os.path.exists(out_json_path):
+            os.makedirs(out_json_path)
+
+        with open(os.path.join(out_json_path, filename), "w") as json_file:
             anno = {'content': new_result}
             json.dump(anno, json_file)
 
@@ -64,7 +71,7 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr
     # if not os.path.exists('../submit'):
     #     os.makedirs('../submit')
     #
-    # fout = open('../submit/%s_submission.csv' % '',
+    # fout = open('../submit/%s_submission.csv' % 'season-2',
     #             'w', encoding='UTF-8', newline='')
     # writer = csv.writer(fout)
     # writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',

@@ -2,6 +2,7 @@ import warnings
 import pdb
 import cv2
 import random
+import os
 
 import mmcv
 import numpy as np
@@ -184,7 +185,7 @@ def show_obb_result(data, result, img_norm_cfg, classes, show=False,
     for img, img_meta in zip(imgs, img_metas):
         h, w, _ = img_meta['img_shape']
         if out_file is not None:
-            out_file = out_file + '/OUT_' + img_meta['filename']
+            out_file = os.path.join(out_file, 'OUT_' + img_meta['filename'])
         img_show = img[:h, :w, :]
 
         bboxes = np.vstack(bbox_result)

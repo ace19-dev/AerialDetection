@@ -19,14 +19,14 @@ nms_thresh = 0.1
 
 
 def py_cpu_nms_poly(dets, thresh):
-    scores = dets[:, 1]
+    scores = dets[:, 8]
     polys = []
     areas = []
     for i in range(len(dets)):
-        tm_polygon = polyiou.VectorDouble([dets[i][2], dets[i][3],
+        tm_polygon = polyiou.VectorDouble([dets[i][0], dets[i][1],
+                                           dets[i][2], dets[i][3],
                                            dets[i][4], dets[i][5],
-                                           dets[i][6], dets[i][7],
-                                           dets[i][8], dets[i][9]])
+                                           dets[i][6], dets[i][7]])
         polys.append(tm_polygon)
     order = scores.argsort()[::-1]
 
@@ -130,6 +130,7 @@ def poly2origpoly(poly, x, y, rate):
         origpoly.append(tmp_y)
     return origpoly
 
+
 def mergebase(srcpath, dstpath, nms):
     assert os.path.exists(srcpath), "The srcpath is not exists!"
     filelist = util.GetFileFromThisRootDir(srcpath)
@@ -156,14 +157,14 @@ def mergebase(srcpath, dstpath, nms):
 
                 rate = re.findall(pattern2, subname)[0]
 
-                class_id = splitline[1]
-                confidence = splitline[2]
-                poly = list(map(float, splitline[3:]))
+                # class_id = splitline[1]
+                confidence = splitline[1]
+                poly = list(map(float, splitline[2:]))
                 origpoly = poly2origpoly(poly, x, y, rate)
                 det = origpoly
-                det.insert(0, confidence)
+                det.append(confidence)
                 det = list(map(float, det))
-                det.insert(0, int(class_id))
+                # det.insert(0, int(class_id))
                 if (oriname not in nameboxdict):
                     nameboxdict[oriname] = []
                 nameboxdict[oriname].append(det)
@@ -172,10 +173,10 @@ def mergebase(srcpath, dstpath, nms):
                 for imgname in nameboxnmsdict:
                     for det in nameboxnmsdict[imgname]:
                         # print('det:', det)
-                        class_id = det[0]
-                        confidence = det[1]
-                        bbox = det[2:]
-                        outline = imgname + ' ' + str(class_id) + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
+                        # class_id = det[0]
+                        confidence = det[-1]
+                        bbox = det[0:-1]
+                        outline = imgname + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
                         # print('outline:', outline)
                         f_out.write(outline + '\n')
 
