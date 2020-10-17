@@ -5,16 +5,22 @@ import shapely.geometry as shgeo
 import os
 import re
 import math
+import json
 
 # import polyiou
 """
     some basic functions which are useful for process DOTA data
 """
 
-wordname_15 = ['plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship',
-               'tennis-court',
-               'basketball-court', 'storage-tank', 'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool',
-               'helicopter']
+# wordname_15 = ['plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship',
+#                'tennis-court',
+#                'basketball-court', 'storage-tank', 'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool',
+#                'helicopter']
+
+wordname_15 = ['small ship', 'large ship', 'civilian aircraft', 'military aircraft', 'small car',
+               'bus', 'truck', 'train', 'crane', 'bridge', 'oil tank', 'dam', 'athletic field',
+               'helipad', 'roundabout', 'etc']
+ID2CAT = {str(idx) : cate_name  for idx, cate_name in enumerate(wordname_15)}
 
 
 def custombasename(fullname):
@@ -211,36 +217,42 @@ def dots2ToRec8(rec):
 def groundtruth2Task1(srcpath, dstpath):
     filelist = GetFileFromThisRootDir(srcpath)
     # names = [custombasename(x.strip())for x in filelist]
-    filedict = {}
+
+    if not os.path.exists(dstpath):
+        os.makedirs(dstpath)
+
+    file_dict = {}
     for cls in wordname_15:
         fd = open(os.path.join(dstpath, 'Task1_') + cls + r'.txt', 'w')
-        filedict[cls] = fd
-    for filepath in filelist:
-        objects = parse_dota_poly2(filepath)
+        file_dict[cls] = fd
 
-        subname = custombasename(filepath)
+    for fpath in filelist:
+        objects = parse_json_dota_poly(fpath)
+
+        subname = custombasename(fpath)
         pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
         rate = re.findall(pattern2, subname)[0]
 
         for obj in objects:
-            category = obj['name']
-            difficult = obj['difficult']
-            poly = obj['poly']
-            if difficult == '2':
-                continue
+            category = ID2CAT[obj['class_id']]
+            # difficult = obj['difficult']
+            poly = [obj['point1_x'], obj['point1_y'], obj['point2_x'], obj['point2_y'],
+                    obj['point3_x'], obj['point3_y'], obj['point4_x'], obj['point4_y']]
+            # if difficult == '2':
+            #     continue
             if rate == '0.5':
-                outline = custombasename(filepath) + ' ' + '1' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + '1' + ' ' + ' '.join(map(str, poly))
             elif rate == '1':
-                outline = custombasename(filepath) + ' ' + '0.8' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + '0.8' + ' ' + ' '.join(map(str, poly))
             elif rate == '2':
-                outline = custombasename(filepath) + ' ' + '0.6' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + '0.6' + ' ' + ' '.join(map(str, poly))
 
-            filedict[category].write(outline + '\n')
+            file_dict[category].write(outline + '\n')
 
 
 def Task2groundtruth_poly(srcpath, dstpath):
     thresh = 0.1
-    filedict = {}
+    file_dict = {}
     Tasklist = GetFileFromThisRootDir(srcpath, '.txt')
 
     for Taskfile in Tasklist:
@@ -257,17 +269,17 @@ def Task2groundtruth_poly(srcpath, dstpath):
             confidence = splitline[1]
             bbox = splitline[2:]
             if float(confidence) > thresh:
-                if filename not in filedict:
-                    # filedict[filename] = codecs.open(os.path.join(dstpath, filename + '.txt'), 'w', 'utf_16')
-                    filedict[filename] = codecs.open(os.path.join(dstpath, filename + '.txt'), 'w')
+                if filename not in file_dict:
+                    # file_dict[filename] = codecs.open(os.path.join(dstpath, filename + '.txt'), 'w', 'utf_16')
+                    file_dict[filename] = codecs.open(os.path.join(dstpath, filename + '.txt'), 'w')
                 # poly = util.dots2ToRec8(bbox)
                 poly = bbox
-                #               filedict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
+                #               file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
                 # print('idname:', idname)
 
-                # filedict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
+                # file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
 
-                filedict[filename].write(' '.join(poly) + ' ' + idname + '\n')
+                file_dict[filename].write(' '.join(poly) + ' ' + idname + '\n')
 
 
 def polygonToRotRectangle(bbox):
@@ -335,3 +347,27 @@ def get_best_begin_point(coordinate):
     if force_flag != 0:
         print("choose one direction!")
     return combinate[force_flag]
+
+
+def parse_json_dota_poly(filename):
+    """
+        parse the dota ground truth in the format:
+        [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+    """
+    f = []
+    if (sys.version_info >= (3, 5)):
+        fd = open(filename, 'r')
+        f = fd
+    elif (sys.version_info >= 2.7):
+        fd = codecs.open(filename, 'r')
+        f = fd
+
+    with open(filename) as json_file:
+        json_data = json.load(json_file)
+    contents = json_data['content']
+
+    objects = []
+    for cont in contents:
+        objects.append(cont)
+
+    return objects
