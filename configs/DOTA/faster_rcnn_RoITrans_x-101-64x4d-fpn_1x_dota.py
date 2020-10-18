@@ -179,11 +179,30 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
-            # # # TODO: bugfix
-            # random_crop=dict(
-            #     min_ious=(0.5, 0.7),
-            #     min_crop_size=0.5
-            # ),
+            albu=dict(
+                transforms=[
+                    dict(
+                        type='ShiftScaleRotate',
+                        shift_limit=0.0625,
+                        scale_limit=0.1,
+                        rotate_limit=45,
+                        interpolation=1,
+                        p=0.5),
+                    # dict(
+                    #     type='RandomBrightnessContrast',
+                    #     brightness_limit=[0.1, 0.1],
+                    #     contrast_limit=[0.1, 0.1],
+                    #     p=0.3),
+                    # dict(type='ChannelShuffle', p=0.1),
+                    dict(
+                        type='OneOf',
+                        transforms=[
+                            dict(type='Blur', blur_limit=3, p=1.0),
+                            dict(type='MedianBlur', blur_limit=3, p=1.0)
+                        ],
+                        p=0.5),
+                ],
+            ),
             photo_metric_distortion=dict(
                 brightness_delta=32,
                 contrast_range=(0.1, 1.1),
@@ -221,7 +240,7 @@ data = dict(
 evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.003, momentum=0.9, weight_decay=0.001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -230,9 +249,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=3000,
-    warmup_ratio=1.0 / 3,
-    step=[14, 23])
+    warmup_iters=300,
+    warmup_ratio=0.1,
+    step=[5, 11])
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -249,7 +268,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 24
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py'

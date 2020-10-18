@@ -17,17 +17,17 @@ import torch
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py',
                         help='train config file path')
     parser.add_argument('--work_dir', default='../pretrained',
                         help='the dir to save logs and models')
-    parser.add_argument('--resume_from', default=None,
+    parser.add_argument('--resume_from', default='../pretrained/epoch_2.pth',
                         help='the checkpoint file to resume from')
     parser.add_argument('--validate', default=False,
                         help='whether to evaluate the checkpoint during training')
     parser.add_argument('--gpus',
                         type=int,
-                        default=1,
+                        default=4,
                         help='number of gpus to use '
                              '(only applicable to non-distributed training)')
     parser.add_argument('--seed', type=int, default=88, help='random seed')
