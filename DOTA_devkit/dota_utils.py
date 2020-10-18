@@ -281,9 +281,8 @@ def task2groundtruth_poly(srcpath, dstpath):
                 #               file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
                 # print('idname:', idname)
 
-                # file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
-
-                file_dict[filename].write(' '.join(poly) + ' ' + idname + '\n')
+                file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
+                # file_dict[filename].write(' '.join(poly) + ' ' + idname + '\n')
 
 
 def polygonToRotRectangle(bbox):

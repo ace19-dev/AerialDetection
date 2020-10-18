@@ -6,16 +6,25 @@ import DOTA_devkit.dota_utils as util
 
 root = '/home/ace19/my-repo/AerialDetection/submit/results'
 
-# util.groundtruth2Task1(r'examplesplit/labelTxt', r'Task1')
-# mergebypoly(r'Task1', r'Task1_merge')
-# util.Task2groundtruth_poly(r'Task1_merge', r'restoredexample/labelTxt')
-util.groundtruth2task(os.path.join(root, 'json'),
-                       os.path.join(root, 'task'))
-mergebypoly(os.path.join(root, 'task'),
-            os.path.join(root, 'task_merged'))
-util.task2groundtruth_poly(os.path.join(root, 'task_merged'),
-                           os.path.join(root, 'restored'))
-                           # r'restoredexample/labelTxt')
+path = os.path.join(root, 'json')
+json_dirs = os.listdir(path)
+json_dirs.sort()
+
+total = len(json_dirs)
+for idx, jd in enumerate(json_dirs):
+    json_path = os.path.join(path, jd)
+
+    # util.groundtruth2Task1(r'examplesplit/labelTxt', r'Task1')
+    # mergebypoly(r'Task1', r'Task1_merge')
+    # util.Task2groundtruth_poly(r'Task1_merge', r'restoredexample/labelTxt')
+    util.groundtruth2task(json_path, os.path.join(json_path, 'task'))
+    mergebypoly(os.path.join(json_path, 'task'),
+                os.path.join(json_path, 'task_merged'))
+    util.task2groundtruth_poly(os.path.join(json_path, 'task_merged'),
+                               os.path.join(json_path, 'restored'))
+                               # r'restoredexample/labelTxt')
+    print('%d/%d completed.. ' % (idx, total))
+
 
 # filepath = 'example/labelTxt'
 # imgids = util.GetFileFromThisRootDir(filepath)
