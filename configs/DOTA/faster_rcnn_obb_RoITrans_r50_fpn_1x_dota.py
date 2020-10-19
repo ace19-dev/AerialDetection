@@ -1,19 +1,17 @@
 CLASSES = ('small ship', 'large ship', 'civilian aircraft', 'military aircraft', 'small car', 'bus', 'truck',
            'train', 'crane', 'bridge', 'oil tank', 'dam', 'athletic field', 'helipad', 'roundabout', 'etc')
-
 # model settings
 model = dict(
     type='RoITransformer',
-    pretrained='open-mmlab://resnext101_64x4d',
+    pretrained='torchvision://resnet50',
     backbone=dict(
-        type='ResNeXt',
-        depth=101,
-        groups=64,
-        base_width=4,
+        type='ResNet',
+        depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
         norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
         style='pytorch'),
     neck=dict(
         type='FPN',
@@ -24,8 +22,9 @@ model = dict(
         type='RPNHead',
         in_channels=256,
         feat_channels=256,
-        anchor_scales=[4],  # original 8
-        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
+        anchor_scales=[8],  # original 8
+        anchor_ratios=[0.5, 1.0, 2.0],
+        # anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -46,8 +45,11 @@ model = dict(
         num_classes=len(CLASSES),
         target_means=[0., 0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2, 0.1],
-        reg_class_agnostic=True,
+        # reg_class_agnostic=True,
+        # with_module=False,
+        reg_class_agnostic=False,
         with_module=False,
+        hbb_trans='hbbpolyobb',
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
@@ -137,11 +139,9 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        # score_thr=0.05, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img=1000)
         score_thr=0.05,
         nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1),
         max_per_img=2000)
-    # score_thr = 0.001, nms = dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img = 2000)
     # score_thr = 0.001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img = 2000)
 
     # soft-nms is also supported for rcnn testing
@@ -164,10 +164,10 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'patch/train.json',
         img_prefix=data_root + 'patch/images',
-        img_scale=[(1280, 768)],
-        multiscale_mode='range',
-        # img_scale=[(896, 896)],
-        # multiscale_mode='value',
+        # img_scale=[(1024, 1024)],
+        # multiscale_mode='range',
+        img_scale=[(1024, 1024)],
+        multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -179,6 +179,7 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
+            # https://albumentations.readthedocs.io/en/latest/examples.html
             albu=dict(
                 transforms=[
                     dict(
@@ -188,11 +189,11 @@ data = dict(
                         rotate_limit=45,
                         interpolation=1,
                         p=0.5),
-                    # dict(
-                    #     type='RandomBrightnessContrast',
-                    #     brightness_limit=[0.1, 0.1],
-                    #     contrast_limit=[0.1, 0.1],
-                    #     p=0.3),
+                    dict(
+                        type='RandomBrightnessContrast',
+                        brightness_limit=[0.1, 0.3],
+                        contrast_limit=[0.1, 0.3],
+                        p=0.2),
                     # dict(type='ChannelShuffle', p=0.1),
                     dict(
                         type='OneOf',
@@ -200,14 +201,14 @@ data = dict(
                             dict(type='Blur', blur_limit=3, p=1.0),
                             dict(type='MedianBlur', blur_limit=3, p=1.0)
                         ],
-                        p=0.5),
+                        p=0.3),
                 ],
             ),
-            photo_metric_distortion=dict(
-                brightness_delta=32,
-                contrast_range=(0.1, 1.1),
-                saturation_range=(0.1, 1.1),
-                hue_delta=18),
+            # photo_metric_distortion=dict(
+            #     brightness_delta=32,
+            #     contrast_range=(0.1, 1.1),
+            #     saturation_range=(0.1, 1.1),
+            #     hue_delta=18),
         ),
     ),
     val=dict(
@@ -225,7 +226,7 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
         img_prefix=data_root + 'patch_test/images',
-        img_scale=[(1024, 1024)],
+        img_scale=(1024, 1024),
         multiscale_mode='value',
         # img_scale=[(1280, 768)],
         # multiscale_mode='range',
@@ -241,7 +242,7 @@ data = dict(
 evaluation = dict(interval=2, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -250,9 +251,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=3000,
+    warmup_iters=1000,
     warmup_ratio=0.01,
-    step=[6, 11])
+    step=[6, 11])  # when using 'step' policy
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -261,6 +262,7 @@ lr_config = dict(
 #     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=2)
+
 log_config = dict(
     interval=50,
     hooks=[
@@ -272,8 +274,8 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py'
-load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_x101_64x4d_fpn_1x_coco/faster_rcnn_x101_64x4d_fpn_1x_coco_20200204-833ee192.pth'
+work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
+load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
 # load_from = None
 resume_from = None
 workflow = [('train', 1)]
