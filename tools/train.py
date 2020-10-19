@@ -17,7 +17,7 @@ import torch
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_RoITrans_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r101_fpn_1x_dota.py',
                         help='train config file path')
     parser.add_argument('--work_dir', default='../pretrained',
                         help='the dir to save logs and models')

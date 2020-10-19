@@ -3,10 +3,10 @@ CLASSES = ('small ship', 'large ship', 'civilian aircraft', 'military aircraft',
 # model settings
 model = dict(
     type='RoITransformer',
-    pretrained='torchvision://resnet50',
+    pretrained='torchvision://resnet101',
     backbone=dict(
         type='ResNet',
-        depth=50,
+        depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
@@ -47,7 +47,6 @@ model = dict(
         target_stds=[0.1, 0.1, 0.2, 0.2, 0.1],
         reg_class_agnostic=True,
         with_module=False,
-        hbb_trans='hbbpolyobb',
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
@@ -162,7 +161,7 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'patch/train.json',
         img_prefix=data_root + 'patch/images',
-        # img_scale=[(1024, 1024)],
+        # img_scale=[(1280, 1024)],
         # multiscale_mode='range',
         img_scale=[(1024, 1024)],
         multiscale_mode='value',
@@ -186,20 +185,29 @@ data = dict(
                         scale_limit=0.1,
                         rotate_limit=45,
                         interpolation=1,
-                        p=0.5),
+                        p=0.3),
                     dict(
                         type='RandomBrightnessContrast',
-                        brightness_limit=[0.1, 0.3],
-                        contrast_limit=[0.1, 0.3],
-                        p=0.2),
+                        brightness_limit=[0.1, 0.1],
+                        contrast_limit=[0.1, 0.1],
+                        p=0.3),
                     # dict(type='ChannelShuffle', p=0.1),
+                    dict(type='ToGray', p=0.3),
                     dict(
                         type='OneOf',
                         transforms=[
-                            dict(type='Blur', blur_limit=3, p=1.0),
+                            dict(type='Blur', blur_limit=11, p=1.0),
                             dict(type='MedianBlur', blur_limit=3, p=1.0)
                         ],
                         p=0.3),
+                    # dict(
+                    #     type='Cutout',
+                    #     num_holes=10,
+                    #     max_h_size=20,
+                    #     max_w_size=20,
+                    #     fill_value=0,
+                    #     p=0.3
+                    # )
                 ],
             ),
             # photo_metric_distortion=dict(
@@ -240,33 +248,26 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.008, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
 # lr_config = dict(
-#     policy='Cyclic',
+#     policy='step',
 #     warmup='linear',
 #     # gamma=0.2,
-#     warmup_iters=1000,
-#     warmup_ratio=0.01,
-#     step=[6, 11])  # when using 'step' policy
-# lr_config = dict(
-#     policy='cyclic',
-#     target_ratio=(10, 1e-4),
-#     cyclic_times=1,
-#     step_ratio_up=0.4,
-# )
+#     warmup_iters=3000,
+#     warmup_ratio=1.0 / 3,
+#     step=[8, 11])  # when using 'step' policy
 lr_config = dict(
     policy='CosineAnnealing',
     # warmup='linear',
-    # warmup_iters=500,
-    # warmup_ratio=1.0 / 50,
+    # warmup_iters=1500,
+    # warmup_ratio=0.01,
     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
-
 log_config = dict(
     interval=50,
     hooks=[
@@ -279,7 +280,7 @@ total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
-load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r101_fpn_2x_coco/faster_rcnn_r101_fpn_2x_coco_bbox_mAP-0.398_20200504_210455-1d2dac9c.pth'
 # load_from = None
 resume_from = None
 workflow = [('train', 1)]
