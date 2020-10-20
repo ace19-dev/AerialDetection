@@ -2,6 +2,7 @@ import warnings
 import pdb
 import cv2
 import random
+import os
 
 import mmcv
 import numpy as np
@@ -184,7 +185,7 @@ def show_obb_result(data, result, img_norm_cfg, classes, show=False,
     for img, img_meta in zip(imgs, img_metas):
         h, w, _ = img_meta['img_shape']
         if out_file is not None:
-            out_file = out_file + '/OUT_' + img_meta['filename']
+            out_file = os.path.join(out_file, 'OUT_' + img_meta['filename'])
         img_show = img[:h, :w, :]
 
         bboxes = np.vstack(bbox_result)
@@ -263,16 +264,18 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
 
         # submit object
         object['file_name'] = img_name
-        object['class_id'] = label
-        object['confidence'] = score
-        object['point1_x'], object['point1_y'] = bbox_int[0], bbox_int[1]
-        object['point2_x'], object['point2_y'] = bbox_int[2], bbox_int[3]
-        object['point3_x'], object['point3_y'] = bbox_int[4], bbox_int[5]
-        object['point4_x'], object['point4_y'] = bbox_int[6], bbox_int[7]
+        object['class_id'] = str(label)
+        object['confidence'] = str(score)
+        object['point1_x'], object['point1_y'] = str(bbox_int[0]), str(bbox_int[1])
+        object['point2_x'], object['point2_y'] = str(bbox_int[2]), str(bbox_int[3])
+        object['point3_x'], object['point3_y'] = str(bbox_int[4]), str(bbox_int[5])
+        object['point4_x'], object['point4_y'] = str(bbox_int[6]), str(bbox_int[7])
         results.append(object)
 
+    # TODO: bugfix
     # if show:
     #     mmcv.imshow(img, img_name, 0)
+
     if out_file is not None:
         mmcv.imwrite(img, out_file)
 

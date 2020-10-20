@@ -3,15 +3,13 @@ CLASSES = ('small ship', 'large ship', 'civilian aircraft', 'military aircraft',
 # model settings
 model = dict(
     type='RoITransformer',
-    pretrained='torchvision://resnet50',
+    pretrained='modelzoo://resnet50',
     backbone=dict(
         type='ResNet',
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
         style='pytorch'),
     neck=dict(
         type='FPN',
@@ -22,9 +20,9 @@ model = dict(
         type='RPNHead',
         in_channels=256,
         feat_channels=256,
-        anchor_scales=[4],  # original 8
-        # anchor_ratios=[0.5, 1.0, 2.0],
-        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
+        anchor_scales=[8],  # original 8
+        anchor_ratios=[0.5, 1.0, 2.0],
+        # anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -161,7 +159,7 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'patch/train.json',
         img_prefix=data_root + 'patch/images',
-        img_scale=[(1280, 768)],
+        img_scale=[(1280, 1024)],
         multiscale_mode='range',
         # img_scale=[(512, 512)],
         # multiscale_mode='value',
@@ -176,17 +174,36 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
-            # # TODO: bugfix
-            # random_crop=dict(
-            #     min_ious=(0.5, 0.7, 0.9),
-            #     min_crop_size=0.5
-            # crop_size=(512, 512)
-            # ),
-            photo_metric_distortion=dict(
-                brightness_delta=32,
-                contrast_range=(0.1, 1.1),
-                saturation_range=(0.1, 1.1),
-                hue_delta=18),
+            # https://albumentations.readthedocs.io/en/latest/examples.html
+            albu=dict(
+                transforms=[
+                    dict(
+                        type='ShiftScaleRotate',
+                        shift_limit=0.0625,
+                        scale_limit=0.0,
+                        rotate_limit=45,
+                        interpolation=1,
+                        p=0.5),
+                    dict(
+                        type='RandomBrightnessContrast',
+                        brightness_limit=[0.1, 0.3],
+                        contrast_limit=[0.1, 0.3],
+                        p=0.2),
+                    # dict(type='ChannelShuffle', p=0.1),
+                    dict(
+                        type='OneOf',
+                        transforms=[
+                            dict(type='Blur', blur_limit=3, p=1.0),
+                            dict(type='MedianBlur', blur_limit=3, p=1.0)
+                        ],
+                        p=0.3),
+                ],
+            ),
+            # photo_metric_distortion=dict(
+            #     brightness_delta=32,
+            #     contrast_range=(0.1, 1.1),
+            #     saturation_range=(0.1, 1.1),
+            #     hue_delta=18),
         ),
     ),
     val=dict(
@@ -203,8 +220,9 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'test/images',
+        img_prefix=data_root + 'patch_test/images',
         img_scale=(1024, 1024),
+        multiscale_mode='value',
         # img_scale=[(1280, 768)],
         # multiscale_mode='range',
         img_norm_cfg=img_norm_cfg,

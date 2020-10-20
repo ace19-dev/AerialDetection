@@ -5,12 +5,13 @@
     Note, the evaluation is on the large scale images
 """
 import os
+import json
 import numpy as np
-import dota_utils as util
+import DOTA_devkit.dota_utils as util
 import re
 import time
 import polyiou
-from poly_nms_gpu.nms_wrapper import poly_nms_gpu
+# from poly_nms_gpu.nms_wrapper import poly_nms_gpu
 import pdb
 
 ## the thresh for nms when merge image
@@ -98,7 +99,7 @@ def py_cpu_nms(dets, thresh):
     return keep
 
 
-def nmsbynamedict(nameboxdict, nms, thresh):
+def nms_namedict(nameboxdict, nms, thresh):
     nameboxnmsdict = {x: [] for x in nameboxdict}
     for imgname in nameboxdict:
         # print('imgname:', imgname)
@@ -156,25 +157,82 @@ def mergebase(srcpath, dstpath, nms):
 
                 rate = re.findall(pattern2, subname)[0]
 
+                # class_id = splitline[1]
                 confidence = splitline[1]
                 poly = list(map(float, splitline[2:]))
                 origpoly = poly2origpoly(poly, x, y, rate)
                 det = origpoly
                 det.append(confidence)
                 det = list(map(float, det))
+                # det.insert(0, int(class_id))
                 if (oriname not in nameboxdict):
                     nameboxdict[oriname] = []
                 nameboxdict[oriname].append(det)
-            nameboxnmsdict = nmsbynamedict(nameboxdict, nms, nms_thresh)
+            nameboxnmsdict = nms_namedict(nameboxdict, nms, nms_thresh)
             with open(dstname, 'w') as f_out:
                 for imgname in nameboxnmsdict:
                     for det in nameboxnmsdict[imgname]:
                         # print('det:', det)
+                        # class_id = det[0]
                         confidence = det[-1]
                         bbox = det[0:-1]
                         outline = imgname + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
                         # print('outline:', outline)
                         f_out.write(outline + '\n')
+
+
+# def mergebase(srcpath, dstpath, nms):
+#     assert os.path.exists(srcpath), "The srcpath is not exists!"
+#     filelist = util.GetFileFromThisRootDir(srcpath)
+#     assert os.path.exists(dstpath), "The dstpath is not exists!"
+#     for fullname in filelist:
+#         name = util.custombasename(fullname)
+#         # print('name:', name)
+#         dstname = os.path.join(dstpath, name + '.json')
+#         with open(fullname) as json_file:
+#             json_data = json.load(json_file)
+#         contents = json_data['content']
+#         # with open(fullname, 'r') as f_in:
+#         namebox_dict = {}
+#         #     lines = f_in.readlines()
+#         #     splitlines = [x.strip().split(' ') for x in lines]
+#         for content in contents:
+#             subname = content['file_name']
+#             splitname = subname.split('__')
+#             oriname = splitname[0]
+#             pattern1 = re.compile(r'__\d+___\d+')
+#             # print('subname:', subname)
+#             x_y = re.findall(pattern1, subname)
+#             x_y_2 = re.findall(r'\d+', x_y[0])
+#             x, y = int(x_y_2[0]), int(x_y_2[1])
+#
+#             pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
+#             rate = re.findall(pattern2, subname)[0]
+#
+#             confidence = content['confidence']
+#             p = [content['point1_x'], content['point1_y'], content['point2_x'], content['point2_y'],
+#                  content['point3_x'], content['point3_y'], content['point4_x'], content['point4_y']]
+#             poly = list(map(float, p))
+#             origpoly = poly2origpoly(poly, x, y, rate)
+#             det = origpoly
+#             det.insert(0, confidence)
+#             det = list(map(float, det))
+#             det.insert(0, int(content['class_id']))
+#             if oriname not in namebox_dict:
+#                 namebox_dict[oriname] = []
+#             namebox_dict[oriname].append(det)
+#
+#         nameboxnmsdict = nms_namedict(namebox_dict, nms, nms_thresh)
+#         with open(dstname, 'w') as f_out:
+#             for imgname in nameboxnmsdict:
+#                 for det in nameboxnmsdict[imgname]:
+#                     # print('det:', det)
+#                     class_id = det[0]
+#                     confidence = det[1]
+#                     bbox = det[2:]
+#                     outline = imgname + ' ' + str(class_id) + ' ' + str(confidence) + ' ' + ' '.join(map(str, bbox))
+#                     print('outline:', outline)
+#                     f_out.write(outline + '\n')
 
 
 def mergebyrec(srcpath, dstpath):
@@ -197,6 +255,10 @@ def mergebypoly(srcpath, dstpath):
     """
     # srcpath = r'/home/dingjian/evaluation_task1/result/faster-rcnn-59/comp4_test_results'
     # dstpath = r'/home/dingjian/evaluation_task1/result/faster-rcnn-59/testtime'
+
+    if not os.path.exists(dstpath):
+        os.makedirs(dstpath)
+
     mergebase(srcpath,
               dstpath,
               py_cpu_nms_poly)
@@ -211,7 +273,7 @@ if __name__ == '__main__':
     #             r'/home/dingjian/data/ODAI/ODAI_submmit/baseline/task1_merge2')
     # mergebypoly(r'/home/dingjian/Documents/Research/experiments/rotateanchorrotateregion/40_angle_agnostic',
     #             r'/home/dingjian/Documents/Research/experiments/rotateanchorrotateregion/40_angle_agnostic_0.1_nms')
-    mergebypoly(r'/home/dingjian/Documents/Research/experiments/Deform_FPN_Naive_poly/Task1_results_epoch12',
+    mergebypoly(r'/home/ace19//Research/experiments/Deform_FPN_Naive_poly/Task1_results_epoch12',
                 r'/home/dingjian/Documents/Research/experiments/Deform_FPN_Naive_poly/Task_results_epoch12_0.1_nms')
     # mergebyrec(r'/home/dingjian/Documents/Research/experiments/Deform_FPN_HBB/Task2_results',
     #            r'/home/dingjian/Documents/Research/experiments/Deform_FPN_HBB/Task2_results_0.3_nms')

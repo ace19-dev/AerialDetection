@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 import argparse
 import os.path as osp
 import shutil
@@ -28,47 +29,62 @@ def get_time_str():
 
 def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.3):
     model.eval()
+
     results = []
     submit_results = []
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
+            # print("###### ", data)
             result = model(return_loss=False, rescale=not show, **data)
         results.append(result)
+        # print("####### ", results)
 
-        if show:
-            # model.module.show_result(data, result, dataset.img_norm_cfg)
+        # if show:
+        # model.module.show_result(data, result, dataset.img_norm_cfg)
+        ori_file_name = data['img_meta'][0].data[0][0]['filename'].split('__')[0]
+        # print(ori_file_name)
 
-            # show DOTA coordinate
-            result = show_obb_result(data, result, dataset.img_norm_cfg, dataset.CLASSES,
-                                     show=show, score_thr=show_score_thr, out_file=out_dir)
-            submit_results.extend(result)
+        # show DOTA coordinate
+        new_result = show_obb_result(data, result, dataset.img_norm_cfg, dataset.CLASSES,
+                                     show=show, score_thr=show_score_thr,
+                                     out_file=os.path.join(out_dir, 'images', ori_file_name))
+        if len(new_result) == 0:
+            continue
+
+        # # for submit
+        # submit_results.extend(new_result)
+
+        filename = new_result[0]['file_name'][:-4] + '.json'
+        out_json_path = os.path.join(out_dir, 'json', ori_file_name)
+        if not os.path.exists(out_json_path):
+            os.makedirs(out_json_path)
+
+        with open(os.path.join(out_json_path, filename), "w") as json_file:
+            anno = {'content': new_result}
+            json.dump(anno, json_file)
 
         batch_size = data['img'][0].size(0)
         for _ in range(batch_size):
             prog_bar.update()
 
-    # TODO: submit
-    if not os.path.exists('../submit'):
-        os.makedirs('../submit')
-
-<<<<<<< HEAD
-    fout = open('../submit/%s_submission.csv' % '',
-=======
-    fout = open('../submit/%s_submission.csv' % '6',
->>>>>>> b036e9f6c22d01d223c9eda548bfd9c4a76d80fa
-                'w', encoding='UTF-8', newline='')
-    writer = csv.writer(fout)
-    writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',
-                     'point2_x', 'point2_y', 'point3_x', 'point3_y', 'point4_x', 'point4_y', ])
-    for r in submit_results:
-        writer.writerow([r['file_name'], r['class_id'], r['confidence'],
-                         r['point1_x'], r['point1_y'],
-                         r['point2_x'], r['point2_y'],
-                         r['point3_x'], r['point3_y'],
-                         r['point4_x'], r['point4_y']])
-    fout.close()
+    # TODO: fix for merge submit
+    # if not os.path.exists('../submit'):
+    #     os.makedirs('../submit')
+    #
+    # fout = open('../submit/%s_submission.csv' % 'season-2',
+    #             'w', encoding='UTF-8', newline='')
+    # writer = csv.writer(fout)
+    # writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',
+    #                  'point2_x', 'point2_y', 'point3_x', 'point3_y', 'point4_x', 'point4_y', ])
+    # for r in submit_results:
+    #     writer.writerow([r['file_name'], r['class_id'], r['confidence'],
+    #                      r['point1_x'], r['point1_y'],
+    #                      r['point2_x'], r['point2_y'],
+    #                      r['point3_x'], r['point3_y'],
+    #                      r['point4_x'], r['point4_y']])
+    # fout.close()
 
     return results
 
@@ -140,13 +156,9 @@ def collect_results(result_part, size, tmp_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r101_fpn_1x_dota.py',
                         help='test config file path')
-<<<<<<< HEAD
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_18.pth',
-=======
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_52.pth',
->>>>>>> b036e9f6c22d01d223c9eda548bfd9c4a76d80fa
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_1.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')
@@ -167,7 +179,7 @@ def parse_args():
     # It is only applicable to single GPU testing and used for debugging and visualization.
     parser.add_argument('--show', default=True, help='show results')
     # set show dir
-    parser.add_argument('--show-dir', default='../pretrained/results',
+    parser.add_argument('--show-dir', default='../submit/results',
                         help='directory where painted images will be saved')
     # parser.add_argument('--show-dir',
     #                     help='directory where painted images will be saved')
