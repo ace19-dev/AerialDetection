@@ -183,23 +183,19 @@ data = dict(
                 #     rotate_limit=45,
                 #     p=0.5),
                 dict(
-                    type='OneOf',
-                    transforms=[
-                        dict(type='GaussNoise', p=1.0),
-                        dict(
-                            type='MultiplicativeNoise',
-                            multiplier=[0.5, 1.5],
-                            elementwise=True,
-                            p=1),
-                    ],
-                    p=0.2),
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True,
+                    p=0.7),
+
                 dict(
                     type='OneOf',
                     transforms=[
                         dict(type='Blur', blur_limit=(15, 15), p=0.2),
                         dict(type='MedianBlur', blur_limit=3, p=0.2),
                     ],
-                    p=0.2),
+                    p=0.3),
                 dict(
                     type='OneOf',
                     transforms=[
@@ -209,6 +205,7 @@ data = dict(
                         dict(type='RandomBrightnessContrast', p=1.0),
                     ],
                     p=0.3),
+                dict(type='ToGray', p=0.3),
                 dict(
                     type='HueSaturationValue',
                     p=0.3),
