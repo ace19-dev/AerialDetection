@@ -36,8 +36,10 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
+            # print("###### ", data)
             result = model(return_loss=False, rescale=not show, **data)
         results.append(result)
+        # print("####### ", results)
 
         # if show:
         # model.module.show_result(data, result, dataset.img_norm_cfg)
@@ -154,9 +156,9 @@ def collect_results(result_part, size, tmp_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_obb_RoITrans_r50_fpn_1x_dota.py',
+    parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r101_fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_6.pth',
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_1.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')

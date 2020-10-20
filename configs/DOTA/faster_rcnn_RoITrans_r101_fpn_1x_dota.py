@@ -3,15 +3,13 @@ CLASSES = ('small ship', 'large ship', 'civilian aircraft', 'military aircraft',
 # model settings
 model = dict(
     type='RoITransformer',
-    pretrained='torchvision://resnet101',
+    pretrained='modelzoo://resnet101',
     backbone=dict(
         type='ResNet',
         depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
         style='pytorch'),
     neck=dict(
         type='FPN',
@@ -22,8 +20,8 @@ model = dict(
         type='RPNHead',
         in_channels=256,
         feat_channels=256,
-        anchor_scales=[8],  # original 8
-        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_scales=[4],  # original 8
+        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         # anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
@@ -176,45 +174,45 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
-            # https://albumentations.readthedocs.io/en/latest/examples.html
-            albu=dict(
-                transforms=[
-                    dict(
-                        type='ShiftScaleRotate',
-                        shift_limit=0.0625,
-                        scale_limit=0.1,
-                        rotate_limit=45,
-                        interpolation=1,
-                        p=0.3),
-                    dict(
-                        type='RandomBrightnessContrast',
-                        brightness_limit=[0.1, 0.1],
-                        contrast_limit=[0.1, 0.1],
-                        p=0.3),
-                    # dict(type='ChannelShuffle', p=0.1),
-                    dict(type='ToGray', p=0.3),
-                    dict(
-                        type='OneOf',
-                        transforms=[
-                            dict(type='Blur', blur_limit=11, p=1.0),
-                            dict(type='MedianBlur', blur_limit=3, p=1.0)
-                        ],
-                        p=0.3),
-                    # dict(
-                    #     type='Cutout',
-                    #     num_holes=10,
-                    #     max_h_size=20,
-                    #     max_w_size=20,
-                    #     fill_value=0,
-                    #     p=0.3
-                    # )
-                ],
-            ),
-            # photo_metric_distortion=dict(
-            #     brightness_delta=32,
-            #     contrast_range=(0.1, 1.1),
-            #     saturation_range=(0.1, 1.1),
-            #     hue_delta=18),
+            # # https://albumentations.readthedocs.io/en/latest/examples.html
+            # albu=dict(
+            #     transforms=[
+            #         dict(
+            #             type='ShiftScaleRotate',
+            #             shift_limit=0.0625,
+            #             scale_limit=0.1,
+            #             rotate_limit=45,
+            #             interpolation=1,
+            #             p=0.3),
+            #         dict(
+            #             type='RandomBrightnessContrast',
+            #             brightness_limit=[0.1, 0.1],
+            #             contrast_limit=[0.1, 0.1],
+            #             p=0.3),
+            #         # dict(type='ChannelShuffle', p=0.1),
+            #         dict(type='ToGray', p=0.3),
+            #         dict(
+            #             type='OneOf',
+            #             transforms=[
+            #                 dict(type='Blur', blur_limit=11, p=1.0),
+            #                 dict(type='MedianBlur', blur_limit=3, p=1.0)
+            #             ],
+            #             p=0.3),
+            #         # dict(
+            #         #     type='Cutout',
+            #         #     num_holes=10,
+            #         #     max_h_size=20,
+            #         #     max_w_size=20,
+            #         #     fill_value=0,
+            #         #     p=0.3
+            #         # )
+            #     ],
+            # ),
+            photo_metric_distortion=dict(
+                brightness_delta=32,
+                contrast_range=(0.1, 1.1),
+                saturation_range=(0.1, 1.1),
+                hue_delta=18),
         ),
     ),
     val=dict(
@@ -253,19 +251,19 @@ optimizer = dict(type='SGD', lr=0.008, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
-# lr_config = dict(
-#     policy='step',
-#     warmup='linear',
-#     # gamma=0.2,
-#     warmup_iters=3000,
-#     warmup_ratio=1.0 / 3,
-#     step=[8, 11])  # when using 'step' policy
 lr_config = dict(
-    policy='CosineAnnealing',
+    policy='step',
     # warmup='linear',
-    # warmup_iters=1500,
+    # # gamma=0.2,
+    # warmup_iters=1000,
     # warmup_ratio=0.01,
-    min_lr_ratio=1e-5)
+    step=[5, 11])  # when using 'step' policy
+# lr_config = dict(
+#     policy='CosineAnnealing',
+#     # warmup='linear',
+#     # warmup_iters=1500,
+#     # warmup_ratio=0.01,
+#     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
 log_config = dict(
