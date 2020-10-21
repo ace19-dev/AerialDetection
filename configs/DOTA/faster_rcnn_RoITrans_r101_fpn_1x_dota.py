@@ -152,49 +152,6 @@ data_root = '/home/ace19/dl_data/Arirang_Dataset/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
-# # https://albumentations.readthedocs.io/en/latest/examples.html
-albu_train_transforms = [
-    dict(
-        type='ShiftScaleRotate',
-        shift_limit=0.0625,
-        scale_limit=0.1,
-        rotate_limit=45,
-        interpolation=1,
-        p=0.3),
-    dict(
-        type='OneOf',
-        transforms=[
-            dict(
-                type='RandomBrightnessContrast',
-                p=1.0),
-            dict(
-                type='CLAHE',
-                p=1.0),
-            dict(
-                type='HueSaturationValue',
-                hue_shift_limit=20,
-                sat_shift_limit=50,
-                val_shift_limit=50,
-                p=1.0)
-        ],
-        p=0.3),
-    dict(
-        type='OneOf',
-        transforms=[
-            dict(type='Blur', blur_limit=7, p=0.5),
-            dict(type='GaussNoise', var_limit=(10.0, 50.0), p=0.5)
-        ],
-        p=0.3),
-    dict(
-            type='Cutout',
-            num_holes=10,
-            max_h_size=20,
-            max_w_size=20,
-            fill_value=0,
-            p=0.3
-        )
-]
-
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=2,

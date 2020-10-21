@@ -242,11 +242,11 @@ def groundtruth2task(srcpath, dstpath):
             # if difficult == '2':
             #     continue
             if rate == '0.5':
-                outline = custombasename(fpath) + ' ' + '1' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
             elif rate == '1':
-                outline = custombasename(fpath) + ' ' + '0.8' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
             elif rate == '2':
-                outline = custombasename(fpath) + ' ' + '0.6' + ' ' + ' '.join(map(str, poly))
+                outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
 
             file_dict[ID2CAT[class_id]].write(outline + '\n')
 

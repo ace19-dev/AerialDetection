@@ -1,7 +1,7 @@
 import os
 import csv
 
-root = '/home/ace19/my-repo/AerialDetection/submit/results/json'
+root = '/home/ace19/my-repo/AerialDetection/submit/results/merged'
 
 _path = os.listdir(root)
 _path.sort()
@@ -14,6 +14,9 @@ for idx, p in enumerate(_path):
     lines = f.readlines()
     for line in lines:
         splitlines = line.strip().split(',')
+        if splitlines[8] == 'etc':
+            continue
+
         object_struct = {}
         object_struct['file_name'] = p + '.png'
         object_struct['class_id'] = splitlines[9]
@@ -34,7 +37,7 @@ for idx, p in enumerate(_path):
 if not os.path.exists('submit'):
     os.makedirs('submit')
 
-fout = open('submit/%s_submission.csv' % 'season-2',
+fout = open('submit/%s_submission.csv' % 'season-3',
             'w', encoding='UTF-8', newline='')
 writer = csv.writer(fout)
 writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',
