@@ -163,6 +163,8 @@ class ExtraAugmentation(object):
         return img, boxes, labels
 
 
+
+
 # import inspect
 #
 # import mmcv
@@ -1148,33 +1150,33 @@ class ExtraAugmentation(object):
 #
 # class ExtraAugmentation(object):
 #
-#     def __init__(self,
-#                  photo_metric_distortion=None,
-#                  expand=None,
-#                  random_crop=None):
-#         self.transforms = []
-#         if photo_metric_distortion is not None:
-#             self.transforms.append(
-#                 PhotoMetricDistortion(**photo_metric_distortion))
-#         if expand is not None:
-#             self.transforms.append(Expand(**expand))
-#         if random_crop is not None:
-#             self.transforms.append(RandomCrop(**random_crop))
-#
-#     # def __init__(self, albu = None, photo_metric_distortion=None):
+#     # def __init__(self,
+#     #              photo_metric_distortion=None,
+#     #              expand=None,
+#     #              random_crop=None):
 #     #     self.transforms = []
-#     #     if albu is not None:
-#     #         self.transforms.append(Albu(**albu))
 #     #     if photo_metric_distortion is not None:
-#     #         self.transforms.append(PhotoMetricDistortion(**photo_metric_distortion))
-#     #
-#     # def __call__(self, img, boxes, labels):
-#     #     img = img.astype(np.float32)
-#     #     for transform in self.transforms:
-#     #         # print('###########')
-#     #         # print('img: ', img)
-#     #         # print('boxes: ', boxes)
-#     #         # print('labels: ', labels)
-#     #         results = {'img':img, 'bboxes':boxes, 'gt_labels':labels}
-#     #         img, boxes, labels = transform(results)
-#     #     return img, boxes, labels
+#     #         self.transforms.append(
+#     #             PhotoMetricDistortion(**photo_metric_distortion))
+#     #     if expand is not None:
+#     #         self.transforms.append(Expand(**expand))
+#     #     if random_crop is not None:
+#     #         self.transforms.append(RandomCrop(**random_crop))
+#
+#     def __init__(self, albu = None, photo_metric_distortion=None):
+#         self.transforms = []
+#         if albu is not None:
+#             self.transforms.append(Albu(**albu))
+#         if photo_metric_distortion is not None:
+#             self.transforms.append(PhotoMetricDistortion(**photo_metric_distortion))
+#
+#     def __call__(self, img, boxes, labels):
+#         img = img.astype(np.float32)
+#         for transform in self.transforms:
+#             # print('###########')
+#             # print('img: ', img)
+#             # print('boxes: ', boxes)
+#             # print('labels: ', labels)
+#             results = {'img':img, 'bboxes':boxes, 'gt_labels':labels}
+#             img, boxes, labels = transform(results)
+#         return img, boxes, labels

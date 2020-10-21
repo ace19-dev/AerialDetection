@@ -152,6 +152,49 @@ data_root = '/home/ace19/dl_data/Arirang_Dataset/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
+# # https://albumentations.readthedocs.io/en/latest/examples.html
+albu_train_transforms = [
+    dict(
+        type='ShiftScaleRotate',
+        shift_limit=0.0625,
+        scale_limit=0.1,
+        rotate_limit=45,
+        interpolation=1,
+        p=0.3),
+    dict(
+        type='OneOf',
+        transforms=[
+            dict(
+                type='RandomBrightnessContrast',
+                p=1.0),
+            dict(
+                type='CLAHE',
+                p=1.0),
+            dict(
+                type='HueSaturationValue',
+                hue_shift_limit=20,
+                sat_shift_limit=50,
+                val_shift_limit=50,
+                p=1.0)
+        ],
+        p=0.3),
+    dict(
+        type='OneOf',
+        transforms=[
+            dict(type='Blur', blur_limit=7, p=0.5),
+            dict(type='GaussNoise', var_limit=(10.0, 50.0), p=0.5)
+        ],
+        p=0.3),
+    dict(
+            type='Cutout',
+            num_holes=10,
+            max_h_size=20,
+            max_w_size=20,
+            fill_value=0,
+            p=0.3
+        )
+]
+
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=2,
@@ -161,7 +204,7 @@ data = dict(
         img_prefix=data_root + 'patch/images',
         # img_scale=[(1280, 1024)],
         # multiscale_mode='range',
-        img_scale=[(1024, 1024)],
+        img_scale=[(1024,1024)],
         multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -174,46 +217,28 @@ data = dict(
             rotate_range=(-180, 180),
         ),
         extra_aug=dict(
-            # # https://albumentations.readthedocs.io/en/latest/examples.html
-            # albu=dict(
-            #     transforms=[
-            #         dict(
-            #             type='ShiftScaleRotate',
-            #             shift_limit=0.0625,
-            #             scale_limit=0.1,
-            #             rotate_limit=45,
-            #             interpolation=1,
-            #             p=0.3),
-            #         dict(
-            #             type='RandomBrightnessContrast',
-            #             brightness_limit=[0.1, 0.1],
-            #             contrast_limit=[0.1, 0.1],
-            #             p=0.3),
-            #         # dict(type='ChannelShuffle', p=0.1),
-            #         dict(type='ToGray', p=0.3),
-            #         dict(
-            #             type='OneOf',
-            #             transforms=[
-            #                 dict(type='Blur', blur_limit=11, p=1.0),
-            #                 dict(type='MedianBlur', blur_limit=3, p=1.0)
-            #             ],
-            #             p=0.3),
-            #         # dict(
-            #         #     type='Cutout',
-            #         #     num_holes=10,
-            #         #     max_h_size=20,
-            #         #     max_w_size=20,
-            #         #     fill_value=0,
-            #         #     p=0.3
-            #         # )
-            #     ],
-            # ),
             photo_metric_distortion=dict(
                 brightness_delta=32,
                 contrast_range=(0.1, 1.1),
                 saturation_range=(0.1, 1.1),
                 hue_delta=18),
-        ),
+            ),
+        # albu_aug=dict(
+        #     # type='Albu',
+        #     transforms=albu_train_transforms,
+        #     bbox_params=dict(
+        #         type='BboxParams',
+        #         format='coco',
+        #         label_fields=['gt_labels'],
+        #         min_visibility=0.0,
+        #         filter_lost_elements=True),
+        #     keymap={
+        #         'img': 'image',
+        #         'gt_bboxes': 'bboxes'
+        #     },
+        #     update_pad_shape=False,
+        #     skip_img_without_anno=True),
+
     ),
     val=dict(
         type=dataset_type,
@@ -246,18 +271,18 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.008, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
 lr_config = dict(
     policy='step',
-    # warmup='linear',
-    # # gamma=0.2,
-    # warmup_iters=1000,
-    # warmup_ratio=0.01,
-    step=[5, 11])  # when using 'step' policy
+    warmup='linear',
+    # gamma=0.2,
+    warmup_iters=3000,
+    warmup_ratio=0.01,
+    step=[6, 11])  # when using 'step' policy
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     # warmup='linear',
@@ -266,6 +291,7 @@ lr_config = dict(
 #     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
+
 log_config = dict(
     interval=50,
     hooks=[

@@ -23,7 +23,7 @@ for idx, jd in enumerate(json_dirs):
     util.task2groundtruth_poly(os.path.join(json_path, 'task_merged'),
                                os.path.join(json_path, 'restored'))
                                # r'restoredexample/labelTxt')
-    print('%d/%d completed.. ' % (idx, total))
+    print('%d/%d merged.. ' % (idx+1, total))
 
 
 # filepath = 'example/labelTxt'
