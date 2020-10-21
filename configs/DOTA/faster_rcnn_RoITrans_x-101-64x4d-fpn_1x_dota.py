@@ -158,13 +158,13 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 data = dict(
-    imgs_per_gpu=2,
+    imgs_per_gpu=1,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'patch/train.json',
         img_prefix=data_root + 'patch/images',
-        img_scale=[(768, 768),(1024, 1024)],
+        img_scale=[(1024, 1024), (768, 768)],
         multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -292,6 +292,7 @@ lr_config = dict(
 #     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
+
 log_config = dict(
     interval=50,
     hooks=[
