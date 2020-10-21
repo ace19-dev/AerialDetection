@@ -27,7 +27,7 @@ def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.3):
+def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.4):
     model.eval()
 
     results = []
@@ -158,7 +158,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
     parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r101_fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_1.pth',
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_12.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')

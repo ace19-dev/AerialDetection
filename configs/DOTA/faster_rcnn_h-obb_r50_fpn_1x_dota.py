@@ -117,8 +117,8 @@ test_cfg = dict(
         score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=2000),
     rrcnn=dict(
         # score_thr=0.0001, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.9), max_per_img=1000)
-    # score_thr = 0.0001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.9), max_per_img = 2000)
-    score_thr = 0.05, nms = dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img = 2000)
+        # score_thr = 0.0001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.9), max_per_img = 2000)
+        score_thr=0.05, nms=dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img=2000)
 
     # soft-nms is also supported for rcnn testing
     # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)

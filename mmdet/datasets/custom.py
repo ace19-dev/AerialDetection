@@ -266,6 +266,16 @@ class CustomDataset(Dataset):
             if len(gt_bboxes) == 0:
                 return None
 
+        if self.albu_aug is not None:
+            # print('##################')
+            # print(img)
+            # print(gt_bboxes)
+            # print(gt_labels)
+            results = {'img': img, 'bboxes': gt_bboxes, 'gt_labels': gt_labels}
+            # img, gt_bboxes, gt_labels = self.albu_aug(img, gt_bboxes, gt_labels)
+            img, gt_bboxes, gt_labels = self.albu_aug(results)
+
+
         # extra augmentation
         if self.albu_aug is not None:
             # print('##################')

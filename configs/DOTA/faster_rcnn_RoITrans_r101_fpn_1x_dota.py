@@ -161,7 +161,7 @@ data = dict(
         img_prefix=data_root + 'patch/images',
         # img_scale=[(1280, 1024)],
         # multiscale_mode='range',
-        img_scale=[(896, 896)],
+        img_scale=[(1024,1024)],
         multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
@@ -289,6 +289,7 @@ lr_config = dict(
     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
+
 log_config = dict(
     interval=50,
     hooks=[
