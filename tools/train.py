@@ -21,8 +21,8 @@ def parse_args():
                         help='train config file path')
     parser.add_argument('--work_dir', default='../pretrained',
                         help='the dir to save logs and models')
-    # parser.add_argument('--resume_from', default='../pretrained/epoch_3.pth',
-    parser.add_argument('--resume_from', default=None,
+    parser.add_argument('--resume_from', default='../pretrained/epoch_1.pth',
+    # parser.add_argument('--resume_from', default=None,
                         help='the checkpoint file to resume from')
     parser.add_argument('--validate', default=False,
                         help='whether to evaluate the checkpoint during training')
