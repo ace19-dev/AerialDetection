@@ -18,9 +18,9 @@ from DOTA_devkit.DOTA import DOTA
 # # split.splitdata(2.5)
 
 
-###############################
+#####################################
 # patch image without annotation
-###############################
+#####################################
 from DOTA_devkit.SplitOnlyImage import splitbase
 
 src = '/home/ace19/dl_data/Arirang_Dataset/test'

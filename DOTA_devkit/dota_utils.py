@@ -20,7 +20,7 @@ import json
 wordname_15 = ['small ship', 'large ship', 'civilian aircraft', 'military aircraft', 'small car',
                'bus', 'truck', 'train', 'crane', 'bridge', 'oil tank', 'dam', 'athletic field',
                'helipad', 'roundabout', 'etc']
-ID2CAT = {str(idx) : cate_name  for idx, cate_name in enumerate(wordname_15)}
+ID2CAT = {str(idx): cate_name for idx, cate_name in enumerate(wordname_15)}
 
 
 def custombasename(fullname):
@@ -278,10 +278,9 @@ def task2groundtruth_poly(srcpath, dstpath):
                     file_dict[filename] = codecs.open(os.path.join(dstpath, filename + '.txt'), 'w')
                 # poly = util.dots2ToRec8(bbox)
                 poly = bbox
-                #               file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
-                # print('idname:', idname)
 
-                file_dict[filename].write(' '.join(poly) + ' ' + idname + '_' + str(round(float(confidence), 2)) + '\n')
+                file_dict[filename].write(','.join(poly) + ',' + idname + ',' + str(wordname_15.index(idname)+1) + ',' + str(
+                    round(float(confidence), 2)) + '\n')
                 # file_dict[filename].write(' '.join(poly) + ' ' + idname + '\n')
 
 

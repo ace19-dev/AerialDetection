@@ -216,29 +216,70 @@ data = dict(
             scale=1.0,
             rotate_range=(-180, 180),
         ),
-        extra_aug=dict(
-            photo_metric_distortion=dict(
-                brightness_delta=32,
-                contrast_range=(0.1, 1.1),
-                saturation_range=(0.1, 1.1),
-                hue_delta=18),
-            ),
-        # albu_aug=dict(
-        #     # type='Albu',
-        #     transforms=albu_train_transforms,
-        #     bbox_params=dict(
-        #         type='BboxParams',
-        #         format='coco',
-        #         label_fields=['gt_labels'],
-        #         min_visibility=0.0,
-        #         filter_lost_elements=True),
-        #     keymap={
-        #         'img': 'image',
-        #         'gt_bboxes': 'bboxes'
-        #     },
-        #     update_pad_shape=False,
-        #     skip_img_without_anno=True),
+        # https://albumentations.readthedocs.io/en/latest/examples.html
+        albu_aug=dict(
+            transforms=[
+                # dict(
+                #     type='ShiftScaleRotate',
+                #     shift_limit=0.0625,
+                #     scale_limit=0.1,
+                #     rotate_limit=45,
+                #     p=0.5),
+                dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True,
+                    p=0.7),
 
+                dict(
+                    type='OneOf',
+                    transforms=[
+                        dict(type='Blur', blur_limit=(15, 15), p=0.2),
+                        dict(type='MedianBlur', blur_limit=3, p=0.2),
+                    ],
+                    p=0.3),
+                dict(
+                    type='OneOf',
+                    transforms=[
+                        dict(type='CLAHE', clip_limit=2, p=1.0),
+                        dict(type='IAASharpen', p=1.0),
+                        dict(type='IAAEmboss', p=1.0),
+                        dict(type='RandomBrightnessContrast', p=1.0),
+                    ],
+                    p=0.3),
+                dict(type='ToGray', p=0.3),
+                dict(
+                    type='HueSaturationValue',
+                    p=0.3),
+                # dict(
+                #     type='Cutout',
+                #     num_holes=10,
+                #     max_h_size=20,
+                #     max_w_size=20,
+                #     fill_value=0,
+                #     p=1),
+            ],
+            bbox_params=dict(
+                type='BboxParams',
+                # https://github.com/open-mmlab/mmdetection/pull/1354
+                # format='pascal_voc',
+                format='coco',
+                label_fields=['gt_labels'],
+                min_visibility=0.0,
+                filter_lost_elements=True),
+            keymap={'img': 'image', 'gt_masks': 'masks', 'gt_bboxes': 'bboxes'},
+            update_pad_shape=False,
+            skip_img_without_anno=True
+        ),
+        # extra_aug=dict(
+        #     photo_metric_distortion=dict(
+        #         brightness_delta=32,
+        #         contrast_range=(0.1, 1.1),
+        #         saturation_range=(0.1, 1.1),
+        #         hue_delta=18),
+        #     ),
+        # ),
     ),
     val=dict(
         type=dataset_type,
@@ -271,7 +312,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -282,7 +323,7 @@ lr_config = dict(
     # gamma=0.2,
     warmup_iters=3000,
     warmup_ratio=0.01,
-    step=[6, 11])  # when using 'step' policy
+    step=[6, 11])
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     # warmup='linear',

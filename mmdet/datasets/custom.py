@@ -13,7 +13,7 @@ from .transforms import (ImageTransform, BboxTransform, MaskTransform,
                          SegMapTransform, Numpy2Tensor)
 from .utils import to_tensor, random_scale
 from .extra_aug import ExtraAugmentation
-# from .extra_aug import Albu
+from .extra_aug import Albu
 from .rotate_aug import RotateAugmentation
 from .rotate_aug import RotateTestAugmentation
 
@@ -58,8 +58,8 @@ class CustomDataset(Dataset):
                  with_semantic_seg=False,
                  seg_prefix=None,
                  seg_scale_factor=1,
-                 extra_aug=None,
                  albu_aug=None,
+                 extra_aug=None,
                  rotate_aug=None,
                  rotate_test_aug=None,
                  resize_keep_ratio=True,
@@ -275,6 +275,15 @@ class CustomDataset(Dataset):
             # img, gt_bboxes, gt_labels = self.albu_aug(img, gt_bboxes, gt_labels)
             img, gt_bboxes, gt_labels = self.albu_aug(results)
 
+
+        # extra augmentation
+        if self.albu_aug is not None:
+            # print('##################')
+            # print(img)
+            # print(gt_bboxes)
+            # print(gt_labels)
+            results = {'img': img, 'bboxes': gt_bboxes, 'gt_labels': gt_labels}
+            img, gt_bboxes, gt_labels = self.albu_aug(results)
 
         # extra augmentation
         if self.extra_aug is not None:
