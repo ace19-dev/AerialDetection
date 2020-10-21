@@ -247,6 +247,8 @@ def groundtruth2task(srcpath, dstpath):
                 outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
             elif rate == '2':
                 outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
+            elif rate == '3':
+                outline = custombasename(fpath) + ' ' + obj['confidence'] + ' ' + ' '.join(map(str, poly))
 
             file_dict[ID2CAT[class_id]].write(outline + '\n')
 
