@@ -273,8 +273,8 @@ def draw_poly_detections(img_name, img, bboxes, labels, class_names, show, out_f
         results.append(object)
 
     # TODO: bugfix
-    # if show:
-    #     mmcv.imshow(img, img_name, 0)
+    if show:
+        mmcv.imshow(img, img_name, 0)
 
     if out_file is not None:
         mmcv.imwrite(img, out_file)

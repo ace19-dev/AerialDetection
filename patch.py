@@ -15,7 +15,7 @@ from DOTA_devkit.DOTA import DOTA
 # split.splitdata(1)
 # # split.splitdata(1.5)
 # split.splitdata(2)
-# # split.splitdata(2.5)
+# split.splitdata(3)
 
 
 #####################################
@@ -29,7 +29,6 @@ out = '/home/ace19/dl_data/Arirang_Dataset/patch_test2'
 split = splitbase(src, out)
 split.splitdata(0.5)
 split.splitdata(1)
-# split.splitdata(1.5)
 split.splitdata(2)
 split.splitdata(3)
 
