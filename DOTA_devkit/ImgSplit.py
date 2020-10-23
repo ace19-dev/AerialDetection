@@ -45,8 +45,7 @@ class splitbase():
                  thresh=0.7,
                  choosebestpoint=True,
                  ext='.png',
-                 padding=True
-                 ):
+                 padding=True):
         """
         :param basepath: base path for dota data
         :param outpath: output base path for dota data,
