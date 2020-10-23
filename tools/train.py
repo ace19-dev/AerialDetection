@@ -21,14 +21,14 @@ def parse_args():
                         help='train config file path')
     parser.add_argument('--work_dir', default='../pretrained',
                         help='the dir to save logs and models')
-    parser.add_argument('--resume_from', default='../pretrained/epoch_8.pth',
-    # parser.add_argument('--resume_from', default=None,
+    # parser.add_argument('--resume_from', default='../pretrained/epoch_8.pth',
+    parser.add_argument('--resume_from', default=None,
                         help='the checkpoint file to resume from')
     parser.add_argument('--validate', default=False,
                         help='whether to evaluate the checkpoint during training')
     parser.add_argument('--gpus',
                         type=int,
-                        default=4,
+                        default=1,
                         help='number of gpus to use '
                              '(only applicable to non-distributed training)')
     parser.add_argument('--seed', type=int, default=88, help='random seed')

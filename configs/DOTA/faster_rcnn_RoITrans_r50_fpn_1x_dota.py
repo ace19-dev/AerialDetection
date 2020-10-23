@@ -182,12 +182,12 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                # dict(
-                #     type='MultiplicativeNoise',
-                #     multiplier=[0.5, 1.5],
-                #     elementwise=True,
-                #     per_channel=True,
-                #     p=0.7),
+                dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    # per_channel=True,
+                    p=0.5),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -200,7 +200,10 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.3),
+                    p=0.5),
+                dict(
+                    type='ChannelShuffle',
+                    p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -220,7 +223,7 @@ data = dict(
                 #     max_h_size=20,
                 #     max_w_size=20,
                 #     fill_value=0,
-                #     p=1),
+                #     p=0.2),
             ],
             bbox_params=dict(
                 type='BboxParams',
@@ -273,21 +276,21 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
-# lr_config = dict(
-#     policy='step',
-#     warmup='linear',
-#     warmup_iters=1500,
-#     warmup_ratio=1.0 / 3,
-#     step=[8, 11])
 lr_config = dict(
-    policy='CosineAnnealing',
-#     # warmup='linear',
-#     # warmup_iters=1500,
-#     # warmup_ratio=0.01,
-    min_lr_ratio=1e-5)
+    policy='step',
+    warmup='linear',
+    warmup_iters=1500,
+    warmup_ratio=1.0 / 3,
+    step=[8, 11])
+# lr_config = dict(
+#     policy='CosineAnnealing',
+# #     # warmup='linear',
+# #     # warmup_iters=1500,
+# #     # warmup_ratio=0.01,
+#     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
 # yapf:disable
@@ -299,7 +302,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 16
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
