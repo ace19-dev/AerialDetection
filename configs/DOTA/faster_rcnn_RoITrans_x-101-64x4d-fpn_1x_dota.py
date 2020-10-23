@@ -272,24 +272,24 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
-lr_config = dict(
-    policy='step',
-    warmup='linear',
-    # gamma=0.2,
-    warmup_iters=6000,
-    warmup_ratio=0.1,
-    step=[16, 22])
 # lr_config = dict(
-#     policy='CosineAnnealing',
+#     policy='step',
 #     warmup='linear',
-#     warmup_iters=1500,
-#     warmup_ratio=1.0 / 10,
-#     min_lr_ratio=1e-5)
+#     # gamma=0.2,
+#     warmup_iters=15000,
+#     warmup_ratio=0.1,
+#     step=[7, 11])
+lr_config = dict(
+    policy='CosineAnnealing',
+    warmup='linear',
+    warmup_iters=6000,
+    warmup_ratio=1.0 / 30,
+    min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
 
@@ -301,12 +301,12 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 24
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py'
-load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_x101_64x4d_fpn_1x_coco/faster_rcnn_x101_64x4d_fpn_1x_coco_20200204-833ee192.pth'
-# load_from = None
+# load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_x101_64x4d_fpn_1x_coco/faster_rcnn_x101_64x4d_fpn_1x_coco_20200204-833ee192.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
 # workflow = [('train', 5), ('val', 1)]
