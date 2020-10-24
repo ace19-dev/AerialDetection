@@ -159,8 +159,8 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'patch/train.json',
-        img_prefix=data_root + 'patch/images',
+        ann_file=data_root + 'patch2/train.json',
+        img_prefix=data_root + 'patch2/images',
         # img_scale=[(1280, 1024)],
         # multiscale_mode='range',
         img_scale=[(1024,1024)],
@@ -184,12 +184,12 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                # dict(
-                #     type='MultiplicativeNoise',
-                #     multiplier=[0.5, 1.5],
-                #     elementwise=True,
-                #     per_channel=True,
-                #     p=0.3),
+                dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    # per_channel=True,
+                    p=0.5),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -202,7 +202,10 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.3),
+                    p=0.4),
+                dict(
+                    type='ChannelShuffle',
+                    p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -259,7 +262,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'patch_test/images',
+        img_prefix=data_root + 'patch_test2/images',
         img_scale=(1024, 1024),
         multiscale_mode='value',
         # img_scale=[(1280, 768)],
@@ -276,7 +279,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.5, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -305,7 +308,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 12
+total_epochs = 18
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
