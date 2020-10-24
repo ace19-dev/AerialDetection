@@ -77,7 +77,8 @@ train_cfg = dict(
             min_pos_iou=0.3,
             ignore_iof_thr=-1),
         sampler=dict(
-            type='RandomSampler',
+            # type='RandomSampler',
+            type='InstanceBalancedPosSampler',
             num=256,
             pos_fraction=0.5,
             neg_pos_ub=-1,
@@ -101,7 +102,8 @@ train_cfg = dict(
                 min_pos_iou=0.5,
                 ignore_iof_thr=-1),
             sampler=dict(
-                type='RandomSampler',
+                # type='RandomSampler',
+                type='InstanceBalancedPosSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -182,29 +184,34 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                dict(
-                    type='MultiplicativeNoise',
-                    multiplier=[0.5, 1.5],
-                    elementwise=True,
-                    per_channel=True,
-                    p=0.3),
-
                 # dict(
-                #     type='OneOf',
-                #     transforms=[
-                #         dict(type='Blur', blur_limit=(15, 15), p=0.2),
-                #         dict(type='MedianBlur', blur_limit=3, p=0.2),
-                #     ],
+                #     type='MultiplicativeNoise',
+                #     multiplier=[0.5, 1.5],
+                #     elementwise=True,
+                #     per_channel=True,
                 #     p=0.3),
+                dict(
+                    type='JpegCompression',
+                    quality_lower=19,
+                    quality_upper=20,
+                    p=0.3
+                ),
                 dict(
                     type='OneOf',
                     transforms=[
-                        dict(type='CLAHE', clip_limit=2, p=1.0),
-                        dict(type='IAASharpen', p=1.0),
-                        dict(type='IAAEmboss', p=1.0),
-                        dict(type='RandomBrightnessContrast', p=1.0),
+                        dict(type='Blur', blur_limit=(15, 15), p=1.0),
+                        dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
                     p=0.3),
+                # dict(
+                #     type='OneOf',
+                #     transforms=[
+                #         dict(type='CLAHE', clip_limit=2, p=1.0),
+                #         dict(type='IAASharpen', p=1.0),
+                #         dict(type='IAAEmboss', p=1.0),
+                #         dict(type='RandomBrightnessContrast', p=1.0),
+                #     ],
+                #     p=0.3),
                 # dict(type='ToGray', p=0.3),
                 # dict(
                 #     type='HueSaturationValue',
@@ -269,7 +276,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.03, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -278,7 +285,7 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1000,
+    warmup_iters=1500,
     warmup_ratio=1.0 / 3,
     step=[8, 11])
 # lr_config = dict(

@@ -27,7 +27,7 @@ def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.44):
+def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.24):
     model.eval()
 
     results = []
@@ -158,7 +158,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
     parser.add_argument('--config', default='../configs/DOTA/faster_rcnn_RoITrans_r50_fpn_1x_dota.py',
                         help='test config file path')
-    parser.add_argument('--checkpoint', default='../pretrained/epoch_12.pth',
+    parser.add_argument('--checkpoint', default='../pretrained/epoch_18.pth',
                         help='checkpoint file')
     # Filename of the output results in pickle format.
     parser.add_argument('--out', help='output result file in pickle format')
@@ -177,7 +177,7 @@ def parse_args():
                         help='eval types')
     # If specified, detection results will be plotted on the images and shown in a new window.
     # It is only applicable to single GPU testing and used for debugging and visualization.
-    parser.add_argument('--show', default=True, help='show results')
+    parser.add_argument('--show', default=False, help='show results')
     # set show dir
     parser.add_argument('--show-dir', default='../submit/results',
                         help='directory where painted images will be saved')

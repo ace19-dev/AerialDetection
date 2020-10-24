@@ -182,12 +182,13 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                # dict(
-                #     type='MultiplicativeNoise',
-                #     multiplier=[0.5, 1.5],
-                #     elementwise=True,
-                #     per_channel=True,
-                #     p=0.7),
+                # TODO: apply soon
+                dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True,
+                    p=0.5),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -200,7 +201,7 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.3),
+                    p=0.4),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -256,7 +257,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'patch_test/images',
+        img_prefix=data_root + 'patch_test2/images',
         # ann_file=data_root + 'test1024_ms/DOTA_test1024_ms.json',
         # img_prefix=data_root + 'test1024_ms/images',
         img_scale=(1024, 1024),
@@ -273,7 +274,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 # lr_config = dict(
@@ -299,7 +300,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 16
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'
