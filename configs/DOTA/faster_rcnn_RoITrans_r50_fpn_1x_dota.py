@@ -182,12 +182,11 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                # TODO: apply soon
                 dict(
                     type='MultiplicativeNoise',
                     multiplier=[0.5, 1.5],
                     elementwise=True,
-                    per_channel=True,
+                    # per_channel=True,
                     p=0.5),
                 dict(
                     type='JpegCompression',
@@ -202,6 +201,9 @@ data = dict(
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
                     p=0.4),
+                dict(
+                    type='ChannelShuffle',
+                    p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -221,7 +223,7 @@ data = dict(
                 #     max_h_size=20,
                 #     max_w_size=20,
                 #     fill_value=0,
-                #     p=1),
+                #     p=0.2),
             ],
             bbox_params=dict(
                 type='BboxParams',
@@ -274,7 +276,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.5, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 # lr_config = dict(
@@ -300,7 +302,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 20
+total_epochs = 22
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

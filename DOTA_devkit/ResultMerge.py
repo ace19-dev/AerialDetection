@@ -168,7 +168,9 @@ def mergebase(srcpath, dstpath, nms):
                 if (oriname not in nameboxdict):
                     nameboxdict[oriname] = []
                 nameboxdict[oriname].append(det)
+
             nameboxnmsdict = nms_namedict(nameboxdict, nms, nms_thresh)
+
             with open(dstname, 'w') as f_out:
                 for imgname in nameboxnmsdict:
                     for det in nameboxnmsdict[imgname]:
