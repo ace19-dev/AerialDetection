@@ -225,6 +225,15 @@ data = dict(
                 #     max_w_size=20,
                 #     fill_value=0,
                 #     p=1),
+                dict(
+                    tyep='CoarseDropout',
+                    max_holes=1,
+                    max_height=512,
+                    max_width=512,
+                    min_holes=1,
+                    min_height=384,
+                    min_width=384,
+                    p=0.1),
             ],
             bbox_params=dict(
                 type='BboxParams',
