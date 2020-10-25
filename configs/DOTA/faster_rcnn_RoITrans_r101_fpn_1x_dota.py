@@ -22,7 +22,6 @@ model = dict(
         feat_channels=256,
         anchor_scales=[8],  # original 8
         anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
-        # anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -189,7 +188,7 @@ data = dict(
                     multiplier=[0.5, 1.5],
                     elementwise=True,
                     # per_channel=True,
-                    p=0.5),
+                    p=0.3),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -202,10 +201,10 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.4),
-                dict(
-                    type='ChannelShuffle',
-                    p=0.1),
+                    p=0.3),
+                # dict(
+                #     type='ChannelShuffle',
+                #     p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -279,7 +278,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.5, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.2, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -288,9 +287,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1500,
+    warmup_iters=1000,
     warmup_ratio=1.0 / 3,
-    step=[8, 11])
+    step=[16, 20])
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     # warmup='linear',
@@ -308,7 +307,7 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 18
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

@@ -24,8 +24,8 @@ model = dict(
         type='RPNHead',
         in_channels=256,
         feat_channels=256,
-        anchor_scales=[4],  # original 8
-        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_scales=[8],  # original 8
+        anchor_ratios=[0.25, 0.5, 1.0, 2.0, 4.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -80,7 +80,8 @@ train_cfg = dict(
             min_pos_iou=0.3,
             ignore_iof_thr=-1),
         sampler=dict(
-            type='RandomSampler',
+            # type='RandomSampler',
+            type='InstanceBalancedPosSampler',
             num=256,
             pos_fraction=0.5,
             neg_pos_ub=-1,
@@ -104,7 +105,8 @@ train_cfg = dict(
                 min_pos_iou=0.5,
                 ignore_iof_thr=-1),
             sampler=dict(
-                type='RandomSampler',
+                # type='RandomSampler',
+                type='InstanceBalancedPosSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -131,9 +133,9 @@ test_cfg = dict(
     rpn=dict(
         # TODO: test nms 2000
         nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
+        nms_pre=2000,
+        nms_post=2000,
+        max_num=2000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
@@ -162,14 +164,10 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_fold2/train.json',
-        img_prefix=data_root + 'train_fold2/images',
-        img_scale=[(1536, 512)],
-        multiscale_mode='range',
-        # img_scale=[(1024, 1024), (768, 768), (512, 512),
-        #            (1024, 768), (768, 1024), (768, 512),
-        #            (512, 768)],
-        # multiscale_mode='value',
+        ann_file=data_root + 'patch2/train.json',
+        img_prefix=data_root + 'patch2/images',
+        img_scale=[(1024, 1024)],
+        multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -180,18 +178,78 @@ data = dict(
             scale=1.2,
             rotate_range=(-180, 180),
         ),
-        extra_aug=dict(
-            # TODO: bugfix
-            # random_crop=dict(
-            #     min_ious=(0.5, 0.7, 0.9),
-            #     min_crop_size=0.5
-            # ),
-            photo_metric_distortion=dict(
-                brightness_delta=32,
-                contrast_range=(0.1, 1.1),
-                saturation_range=(0.1, 1.1),
-                hue_delta=18),
+        # https://albumentations.readthedocs.io/en/latest/examples.html
+        albu_aug=dict(
+            transforms=[
+                # dict(
+                #     type='ShiftScaleRotate',
+                #     shift_limit=0.0625,
+                #     scale_limit=0.1,
+                #     rotate_limit=45,
+                #     p=0.5),
+                dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    # per_channel=True,
+                    p=0.5),
+                dict(
+                    type='JpegCompression',
+                    quality_lower=19,
+                    quality_upper=20,
+                    p=0.3
+                ),
+                dict(
+                    type='OneOf',
+                    transforms=[
+                        dict(type='Blur', blur_limit=(15, 15), p=1.0),
+                        dict(type='MedianBlur', blur_limit=3, p=1.0),
+                    ],
+                    p=0.4),
+                dict(
+                    type='ChannelShuffle',
+                    p=0.1),
+                # dict(
+                #     type='OneOf',
+                #     transforms=[
+                #         dict(type='CLAHE', clip_limit=2, p=1.0),
+                #         dict(type='IAASharpen', p=1.0),
+                #         dict(type='IAAEmboss', p=1.0),
+                #         dict(type='RandomBrightnessContrast', p=1.0),
+                #     ],
+                #     p=0.3),
+                # dict(type='ToGray', p=0.3),
+                # dict(
+                #     type='HueSaturationValue',
+                #     p=0.3),
+                # dict(
+                #     type='Cutout',
+                #     num_holes=10,
+                #     max_h_size=20,
+                #     max_w_size=20,
+                #     fill_value=0,
+                #     p=1),
+            ],
+            bbox_params=dict(
+                type='BboxParams',
+                # https://github.com/open-mmlab/mmdetection/pull/1354
+                # format='pascal_voc',
+                format='coco',
+                label_fields=['gt_labels'],
+                min_visibility=0.0,
+                filter_lost_elements=True),
+            keymap={'img': 'image', 'gt_masks': 'masks', 'gt_bboxes': 'bboxes'},
+            update_pad_shape=False,
+            skip_img_without_anno=True
         ),
+        # extra_aug=dict(
+        #     photo_metric_distortion=dict(
+        #         brightness_delta=32,
+        #         contrast_range=(0.1, 1.1),
+        #         saturation_range=(0.1, 1.1),
+        #         hue_delta=18),
+        #     ),
+        # ),
     ),
     val=dict(
         type=dataset_type,
@@ -207,8 +265,9 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'baseline_test/images',
+        img_prefix=data_root + 'patch_test2/images',
         img_scale=(1024, 1024),
+        multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -218,10 +277,10 @@ data = dict(
 )
 # The config to build the evaluation hook,
 # refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
-evaluation = dict(interval=5, metric='bbox')
+evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.3, momentum=0.9, weight_decay=0.0001)
 # optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
@@ -230,9 +289,9 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=2500,
-    warmup_ratio=0.001,
-    step=[21, 29])  # when using 'step' policy
+    warmup_iters=1500,
+    warmup_ratio=1.0 / 3,
+    step=[8, 11])  # when using 'step' policy
 # lr_config = dict(
 #     policy='CosineAnnealing',
 #     warmup='linear',
@@ -240,7 +299,7 @@ lr_config = dict(
 #     warmup_ratio=1.0 / 10,
 #     min_lr_ratio=1e-5)
 
-checkpoint_config = dict(interval=5)
+checkpoint_config = dict(interval=1)
 log_config = dict(
     interval=50,
     hooks=[
@@ -249,11 +308,11 @@ log_config = dict(
     ])
 
 # runtime settings
-total_epochs = 30
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_x-101-64x4d-fpn_1x_dota.py'
-load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_x101_64x4d_fpn_1x_coco/faster_rcnn_x101_64x4d_fpn_1x_coco_20200204-833ee192.pth'
+load_from = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_x101_32x4d_fpn_1x_coco/faster_rcnn_x101_32x4d_fpn_1x_coco_20200203-cff10310.pth'
 # load_from = None
 resume_from = None
 workflow = [('train', 1)]

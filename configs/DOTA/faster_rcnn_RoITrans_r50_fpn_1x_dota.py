@@ -187,7 +187,7 @@ data = dict(
                     multiplier=[0.5, 1.5],
                     elementwise=True,
                     # per_channel=True,
-                    p=0.5),
+                    p=0.3),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -200,10 +200,10 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.4),
-                dict(
-                    type='ChannelShuffle',
-                    p=0.1),
+                    p=0.3),
+                # dict(
+                #     type='ChannelShuffle',
+                #     p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
@@ -302,7 +302,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 22
+total_epochs = 25
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

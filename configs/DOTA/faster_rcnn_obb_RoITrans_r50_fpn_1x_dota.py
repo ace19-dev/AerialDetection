@@ -45,7 +45,7 @@ model = dict(
         target_means=[0., 0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2, 0.1],
         # https://mmdetection.readthedocs.io/en/latest/_modules/mmdet/models/roi_heads/bbox_heads/bbox_head.html
-        reg_class_agnostic=False,
+        reg_class_agnostic=True,
         with_module=False,
         hbb_trans='hbbpolyobb',
         loss_cls=dict(
