@@ -10,7 +10,7 @@ class splitbase():
     def __init__(self,
                  srcpath,
                  dstpath,
-                 gap=768,
+                 gap=896,
                  # gap=512,
                  subsize=1024,
                  ext='.png'):

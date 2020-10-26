@@ -182,12 +182,12 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                dict(
-                    type='MultiplicativeNoise',
-                    multiplier=[0.5, 1.5],
-                    elementwise=True,
-                    # per_channel=True,
-                    p=0.3),
+                # dict(
+                #     type='MultiplicativeNoise',
+                #     multiplier=[0.5, 1.5],
+                #     elementwise=True,
+                #     # per_channel=True,
+                #     p=0.3),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -212,18 +212,18 @@ data = dict(
                 #         dict(type='IAAEmboss', p=1.0),
                 #         dict(type='RandomBrightnessContrast', p=1.0),
                 #     ],
-                #     p=0.3),
+                #     p=0.1),
                 # dict(type='ToGray', p=0.3),
                 # dict(
                 #     type='HueSaturationValue',
                 #     p=0.3),
                 # dict(
                 #     type='Cutout',
-                #     num_holes=10,
-                #     max_h_size=20,
-                #     max_w_size=20,
+                #     num_holes=1,
+                #     max_h_size=384,
+                #     max_w_size=384,
                 #     fill_value=0,
-                #     p=0.2),
+                #     p=0.01),
             ],
             bbox_params=dict(
                 type='BboxParams',
@@ -302,7 +302,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 25
+total_epochs = 22
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

@@ -183,12 +183,12 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                dict(
-                    type='MultiplicativeNoise',
-                    multiplier=[0.5, 1.5],
-                    elementwise=True,
-                    # per_channel=True,
-                    p=0.3),
+                # dict(
+                #     type='MultiplicativeNoise',
+                #     multiplier=[0.5, 1.5],
+                #     elementwise=True,
+                #     # per_channel=True,
+                #     p=0.3),
                 dict(
                     type='JpegCompression',
                     quality_lower=19,
@@ -225,15 +225,15 @@ data = dict(
                 #     max_w_size=20,
                 #     fill_value=0,
                 #     p=1),
-                dict(
-                    tyep='CoarseDropout',
-                    max_holes=1,
-                    max_height=512,
-                    max_width=512,
-                    min_holes=1,
-                    min_height=384,
-                    min_width=384,
-                    p=0.1),
+                # dict(
+                #     tyep='CoarseDropout',
+                #     max_holes=1,
+                #     max_height=384,
+                #     max_width=384,
+                #     min_holes=1,
+                #     min_height=256,
+                #     min_width=256,
+                #     p=0.1),
             ],
             bbox_params=dict(
                 type='BboxParams',
@@ -296,7 +296,7 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     # gamma=0.2,
-    warmup_iters=1000,
+    warmup_iters=55000,
     warmup_ratio=1.0 / 3,
     step=[16, 20])
 # lr_config = dict(
