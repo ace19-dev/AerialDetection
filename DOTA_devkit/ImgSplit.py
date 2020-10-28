@@ -41,7 +41,7 @@ class splitbase():
                  outpath,
                  code='utf-8',
                  # gap=512,
-                 gap=896,
+                 gap=512,
                  subsize=1024,
                  thresh=0.7,
                  choosebestpoint=True,

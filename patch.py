@@ -14,7 +14,7 @@ split = splitbase(src, out, choosebestpoint=True)
 split.splitdata(0.5)
 split.splitdata(1)
 split.splitdata(2)
-# split.splitdata(3)
+split.splitdata(3)
 
 
 #####################################

@@ -204,15 +204,15 @@ data = dict(
                 # dict(
                 #     type='ChannelShuffle',
                 #     p=0.1),
-                dict(
-                    type='OneOf',
-                    transforms=[
-                        dict(type='CLAHE', clip_limit=2, p=1.0),
-                        dict(type='IAASharpen', p=1.0),
-                        dict(type='IAAEmboss', p=1.0),
-                        dict(type='RandomBrightnessContrast', p=1.0),
-                    ],
-                    p=0.1),
+                # dict(
+                #     type='OneOf',
+                #     transforms=[
+                #         dict(type='CLAHE', clip_limit=2, p=1.0),
+                #         dict(type='IAASharpen', p=1.0),
+                #         dict(type='IAAEmboss', p=1.0),
+                #         dict(type='RandomBrightnessContrast', p=1.0),
+                #     ],
+                #     p=0.1),
                 # dict(type='ToGray', p=0.3),
                 # dict(
                 #     type='HueSaturationValue',
@@ -276,7 +276,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.7, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 # lr_config = dict(
