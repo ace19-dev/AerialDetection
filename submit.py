@@ -37,7 +37,7 @@ for idx, p in enumerate(_path):
 if not os.path.exists('submit'):
     os.makedirs('submit')
 
-fout = open('submit/%s_submission.csv' % 'season-6',
+fout = open('submit/%s_submission.csv' % 'season-10',
             'w', encoding='UTF-8', newline='')
 writer = csv.writer(fout)
 writer.writerow(['file_name', 'class_id', 'confidence', 'point1_x', 'point1_y',

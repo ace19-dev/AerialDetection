@@ -182,17 +182,11 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                # dict(
-                #     type='MultiplicativeNoise',
-                #     multiplier=[0.5, 1.5],
-                #     elementwise=True,
-                #     # per_channel=True,
-                #     p=0.3),
                 dict(
                     type='JpegCompression',
-                    quality_lower=19,
-                    quality_upper=20,
-                    p=0.3
+                    quality_lower=39,
+                    quality_upper=40,
+                    p=0.1
                 ),
                 dict(
                     type='OneOf',
@@ -200,30 +194,30 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.3),
-                # dict(
-                #     type='ChannelShuffle',
-                #     p=0.1),
+                    p=0.1),
                 # dict(
                 #     type='OneOf',
                 #     transforms=[
                 #         dict(type='CLAHE', clip_limit=2, p=1.0),
-                #         dict(type='IAASharpen', p=1.0),
-                #         dict(type='IAAEmboss', p=1.0),
+                #         # dict(type='IAASharpen', p=1.0),
+                #         # dict(type='IAAEmboss', p=1.0),
                 #         dict(type='RandomBrightnessContrast', p=1.0),
                 #     ],
-                #     p=0.1),
-                # dict(type='ToGray', p=0.3),
+                #     p=0.2),
+                # dict(type='ToGray', p=0.2),
                 # dict(
                 #     type='HueSaturationValue',
-                #     p=0.3),
+                #     hue_shift_limit=10,
+                #     sat_shift_limit=20,
+                #     val_shift_limit=10,
+                #     p=0.2),
                 # dict(
                 #     type='Cutout',
-                #     num_holes=1,
-                #     max_h_size=384,
-                #     max_w_size=384,
+                #     num_holes=10,
+                #     max_h_size=20,
+                #     max_w_size=20,
                 #     fill_value=0,
-                #     p=0.01),
+                #     p=0.2),
             ],
             bbox_params=dict(
                 type='BboxParams',
@@ -266,7 +260,7 @@ data = dict(
         multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
-        flip_ratio=0,
+        flip_ratio=0.5,
         with_mask=False,
         with_label=False,
         test_mode=True)
@@ -276,7 +270,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.2, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 # lr_config = dict(

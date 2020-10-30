@@ -27,7 +27,7 @@ def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.25):
+def single_gpu_test(model, data_loader, show=False, out_dir=None, show_score_thr=0.2):
     model.eval()
 
     results = []
