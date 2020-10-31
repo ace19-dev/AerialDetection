@@ -1,3 +1,5 @@
+import cv2
+
 CLASSES = ('small ship', 'large ship', 'civilian aircraft', 'military aircraft', 'small car', 'bus', 'truck',
            'train', 'crane', 'bridge', 'oil tank', 'dam', 'athletic field', 'helipad', 'roundabout', 'etc')
 # model settings
@@ -170,7 +172,7 @@ data = dict(
         with_crowd=True,
         with_label=True,
         rotate_aug=dict(
-            scale=1.0,
+            scale=1.2,
             rotate_range=(-180, 180),
         ),
         # https://albumentations.readthedocs.io/en/latest/examples.html
@@ -186,7 +188,7 @@ data = dict(
                     type='JpegCompression',
                     quality_lower=39,
                     quality_upper=40,
-                    p=0.1
+                    p=0.3
                 ),
                 dict(
                     type='OneOf',
@@ -194,17 +196,22 @@ data = dict(
                         dict(type='Blur', blur_limit=(15, 15), p=1.0),
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
-                    p=0.1),
+                    p=0.3
+                ),
+                dict(
+                    type='OneOf',
+                    transforms=[
+                        dict(type='CLAHE', clip_limit=2, p=1.0),
+                        dict(type='IAASharpen', p=1.0),
+                        dict(type='IAAEmboss', p=1.0),
+                        dict(type='RandomBrightnessContrast', p=1.0),
+                    ],
+                    p=0.4
+                ),
                 # dict(
-                #     type='OneOf',
-                #     transforms=[
-                #         dict(type='CLAHE', clip_limit=2, p=1.0),
-                #         # dict(type='IAASharpen', p=1.0),
-                #         # dict(type='IAAEmboss', p=1.0),
-                #         dict(type='RandomBrightnessContrast', p=1.0),
-                #     ],
-                #     p=0.2),
-                # dict(type='ToGray', p=0.2),
+                #     type='ToGray',
+                #     p=0.2
+                # ),
                 # dict(
                 #     type='HueSaturationValue',
                 #     hue_shift_limit=10,
@@ -260,7 +267,7 @@ data = dict(
         multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
-        flip_ratio=0.5,
+        flip_ratio=0,
         with_mask=False,
         with_label=False,
         test_mode=True)
