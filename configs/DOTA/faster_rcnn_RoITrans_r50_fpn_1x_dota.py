@@ -185,6 +185,11 @@ data = dict(
                 #     rotate_limit=45,
                 #     p=0.5),
                 dict(
+                    type='MultiplicativeNoise',
+                    multiplier=[0.8, 1.2],
+                    elementwise=True,
+                    p=0.3),
+                dict(
                     type='JpegCompression',
                     quality_lower=39,
                     quality_upper=40,
@@ -197,16 +202,6 @@ data = dict(
                         dict(type='MedianBlur', blur_limit=3, p=1.0),
                     ],
                     p=0.3
-                ),
-                dict(
-                    type='OneOf',
-                    transforms=[
-                        dict(type='CLAHE', clip_limit=2, p=1.0),
-                        dict(type='IAASharpen', p=1.0),
-                        dict(type='IAAEmboss', p=1.0),
-                        dict(type='RandomBrightnessContrast', p=1.0),
-                    ],
-                    p=0.4
                 ),
                 # dict(
                 #     type='ToGray',
@@ -260,7 +255,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'baseline_test/test.json',
-        img_prefix=data_root + 'patch_test2/images',
+        img_prefix=data_root + 'patch_final/images',
         # ann_file=data_root + 'test1024_ms/DOTA_test1024_ms.json',
         # img_prefix=data_root + 'test1024_ms/images',
         img_scale=(1024, 1024),
@@ -283,9 +278,9 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # lr_config = dict(
 #     policy='step',
 #     warmup='linear',
-#     warmup_iters=1500,
+#     warmup_iters=9000,
 #     warmup_ratio=1.0 / 3,
-#     step=[8, 11])
+#     step=[18, 20])
 lr_config = dict(
     policy='CosineAnnealing',
 #     # warmup='linear',

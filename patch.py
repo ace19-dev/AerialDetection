@@ -22,8 +22,8 @@ from DOTA_devkit.DOTA import DOTA
 #####################################
 from DOTA_devkit.SplitOnlyImage import splitbase
 
-src = '/home/ace19/dl_data/Arirang_Dataset/test'
-out = '/home/ace19/dl_data/Arirang_Dataset/patch_test2'
+src = '/home/ace19/dl_data/Arirang_Dataset/final'
+out = '/home/ace19/dl_data/Arirang_Dataset/patch_final'
 
 split = splitbase(src, out)
 split.splitdata(0.5)
