@@ -40,7 +40,6 @@ class splitbase():
                  basepath,
                  outpath,
                  code='utf-8',
-                 # gap=512,
                  gap=768,
                  subsize=1024,
                  thresh=0.7,

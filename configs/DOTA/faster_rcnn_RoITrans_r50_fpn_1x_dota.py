@@ -163,8 +163,6 @@ data = dict(
         img_prefix=data_root + 'patch2/images',
         img_scale=[(1024, 1024)],
         multiscale_mode='value',
-        # img_scale=[(1024,1024)],
-        # multiscale_mode='value',
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -172,7 +170,7 @@ data = dict(
         with_crowd=True,
         with_label=True,
         rotate_aug=dict(
-            scale=1.2,
+            scale=1.0,
             rotate_range=(-180, 180),
         ),
         # https://albumentations.readthedocs.io/en/latest/examples.html
@@ -184,11 +182,11 @@ data = dict(
                 #     scale_limit=0.1,
                 #     rotate_limit=45,
                 #     p=0.5),
-                dict(
-                    type='MultiplicativeNoise',
-                    multiplier=[0.8, 1.2],
-                    elementwise=True,
-                    p=0.3),
+                # dict(
+                #     type='MultiplicativeNoise',
+                #     multiplier=[0.8, 1.2],
+                #     elementwise=True,
+                #     p=0.3),
                 dict(
                     type='JpegCompression',
                     quality_lower=39,
@@ -272,7 +270,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.2, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.5, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 # lr_config = dict(
@@ -280,12 +278,12 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 #     warmup='linear',
 #     warmup_iters=9000,
 #     warmup_ratio=1.0 / 3,
-#     step=[18, 20])
+#     step=[8, 11])
 lr_config = dict(
     policy='CosineAnnealing',
-#     # warmup='linear',
-#     # warmup_iters=1500,
-#     # warmup_ratio=0.01,
+    # warmup='linear',
+    # warmup_iters=4000,
+    # warmup_ratio=0.01,
     min_lr_ratio=1e-5)
 
 checkpoint_config = dict(interval=1)
@@ -298,7 +296,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 21
+total_epochs = 18
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/faster_rcnn_RoITrans_r50_fpn_1x_dota'

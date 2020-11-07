@@ -11,7 +11,6 @@ class splitbase():
                  srcpath,
                  dstpath,
                  gap=768,
-                 # gap=512,
                  subsize=1024,
                  ext='.png'):
         self.srcpath = srcpath
